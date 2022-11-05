@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "TestFirstPersonGameMode.h"
-#include "TestFirstPersonHUD.h"
-#include "TestFirstPersonCharacter.h"
+#include "TestFirstPerson/Public/TestFirstPersonGameMode.h"
+#include "TestFirstPerson/Public/TestFirstPersonHUD.h"
+#include "TestFirstPerson/Public/TestFirstPersonCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 ATestFirstPersonGameMode::ATestFirstPersonGameMode()
