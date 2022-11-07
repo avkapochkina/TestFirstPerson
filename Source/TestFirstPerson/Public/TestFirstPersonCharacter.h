@@ -13,8 +13,10 @@ class UCameraComponent;
 class UMotionControllerComponent;
 class UAnimMontage;
 class USoundBase;
+class ABasePickup;
 
 UCLASS(config=Game)
+
 class ATestFirstPersonCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -99,6 +101,11 @@ protected:
 
 	/** Handles stafing movement, left and right */
 	void MoveRight(float Val);
+	
+	void PickupItem();
+
+	UPROPERTY()
+	ABasePickup* PickupActor;
 
 	/**
 	 * Called via input to turn at a given rate.
@@ -145,4 +152,3 @@ public:
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 };
-

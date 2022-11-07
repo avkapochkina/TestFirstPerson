@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TestFirstPerson/Public/TestFirstPersonCharacter.h"
+
+#include "BasePickup.h"
 #include "TestFirstPerson/Public/TestFirstPersonProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
@@ -120,6 +122,9 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATestFirstPersonCharacter::OnFire);
 
+	// Bind pickup event
+	PlayerInputComponent->BindAction("PickupItem", IE_Pressed, this, &ATestFirstPersonCharacter::PickupItem);
+	
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
 
@@ -282,6 +287,40 @@ void ATestFirstPersonCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+
+void ATestFirstPersonCharacter::PickupItem()
+{
+	if(PickupActor)
+	{
+		// или бросить на R ???
+		PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		return;
+	}
+	
+	FHitResult OutHit;
+    FVector Start = GetActorLocation();
+    FVector ForwardVector = GetActorForwardVector();
+    FVector End = ((ForwardVector * 1000.f) + Start);
+    FCollisionQueryParams CollisionParams;
+    // стукает по коллизии ???
+    if(ActorLineTraceSingle(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
+    {
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green,
+    		FString::Printf(TEXT("The Component Being Hit is: %s"), *OutHit.GetComponent()->GetName()));
+    	if(Cast<ABasePickup>(OutHit.Actor))
+    	{
+    		PickupActor = Cast<ABasePickup>(OutHit.Actor);
+    		FVector Distance = Start - PickupActor->GetActorLocation();
+    		if(PickupActor->PickupDistance < Distance.Size())
+    			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,
+     						FString::Printf(TEXT("PICKUPED")));
+    		// аттач к сокету
+    		// weapon или не weapon
+    		// вот в чём вопрос
+    	}
+    }
 }
 
 bool ATestFirstPersonCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)

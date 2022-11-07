@@ -1,6 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "TestFirstPerson/Public/BasePickup.h"
 #include "Components/WidgetComponent.h"
 
@@ -24,6 +23,8 @@ ABasePickup::ABasePickup()
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	SphereComponent->SetupAttachment(RootComponent);
+
+	HighlightMaterial = CreateDefaultSubobject<UMaterial>(TEXT("HighlightMaterial"));
 }
 
 // Called when the game starts or when spawned
@@ -38,6 +39,8 @@ void ABasePickup::BeginPlay()
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ABasePickup::OnOverlapBegin);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &ABasePickup::OnOverlapEnd);
+	
+	SkeletalMeshComponent->SetMaterial(1, HighlightMaterial);
 }
 
 void ABasePickup::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -59,7 +62,13 @@ void ABasePickup::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, clas
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		if(Cast<APawn>(OtherActor))
+		{
 			ShowWidget();
+			if(HighlightMaterial)
+			{
+				ShowHighlight();
+			}
+		}
 	}
 }
 
@@ -70,7 +79,13 @@ void ABasePickup::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class 
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		if(Cast<APawn>(OtherActor))
+		{
 			HideWidget();
+			if(HighlightMaterial)
+			{
+				HideHighlight();
+			}
+		}
 	}
 }
 
@@ -89,4 +104,14 @@ void ABasePickup::HideWidget()
 {
 	if(WidgetComponent)
 		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void ABasePickup::ShowHighlight()
+{
+	UE_LOG(LogActor, Warning, TEXT("ADD HIGHLIGHT"));
+}
+
+void ABasePickup::HideHighlight()
+{
+	UE_LOG(LogActor, Warning, TEXT("ADD HIGHLIGHT"));
 }

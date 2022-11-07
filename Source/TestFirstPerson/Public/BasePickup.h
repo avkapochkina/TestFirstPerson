@@ -34,6 +34,12 @@ public:
 	
 	UFUNCTION()
 	void HideWidget();
+	
+	UFUNCTION()
+	void ShowHighlight();
+	
+	UFUNCTION()
+	void HideHighlight();
 
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
@@ -44,7 +50,7 @@ public:
 		class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
-	float PickupDistance = 10.0;
+	float PickupDistance = 100.0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Components")
 	USkeletalMeshComponent* SkeletalMeshComponent;
@@ -54,4 +60,7 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Components")
 	UWidgetComponent* WidgetComponent;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Materials")
+	class UMaterialInterface* HighlightMaterial;
 };
