@@ -2,6 +2,8 @@
 
 
 #include "HealthComponent.h"
+
+#include "Dummy.h"
 #include "TestFirstPersonCharacter.h"
 #include "TestFirstPersonGameMode.h"
 
@@ -67,10 +69,15 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 		{
 			ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(DamagedActor);
 			Character->OnDeath();
+			const auto GameMode = GetWorld()->GetAuthGameMode<ATestFirstPersonGameMode>();
+			if (!GameMode) return;
+			GameMode->GameOver();
 		}
-		//
-		const auto GameMode = GetWorld()->GetAuthGameMode<ATestFirstPersonGameMode>();
-		if (!GameMode) return;
-		GameMode->GameOver();
+		
+		if(Cast<ADummy>(DamagedActor))
+		{
+			ADummy* Actor = Cast<ADummy>(DamagedActor);
+			Actor->OnDeath();
+		}
 	}
 }
