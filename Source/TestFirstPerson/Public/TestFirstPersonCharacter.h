@@ -23,7 +23,13 @@ UCLASS(config=Game)
 class ATestFirstPersonCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
+	
+protected:
+	virtual void BeginPlay();
+	
+public:
+	ATestFirstPersonCharacter();
+	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* Mesh1P;
@@ -36,13 +42,6 @@ class ATestFirstPersonCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
-public:
-	ATestFirstPersonCharacter();
-
-protected:
-	virtual void BeginPlay();
-	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta);
-public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -58,10 +57,11 @@ public:
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
 	TSubclassOf<class ATestFirstPersonProjectile> ProjectileClass;
-	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
-protected:
 	
-	/** Fires a projectile. */
+	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+	
+	virtual void OnDeath();
+protected:
 	void OnFire();
 
 	/** Handles moving forward/backward */
@@ -97,38 +97,19 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
-
-	struct TouchData
-	{
-		TouchData() { bIsPressed = false;Location=FVector::ZeroVector;}
-		bool bIsPressed;
-		ETouchIndex::Type FingerIndex;
-		FVector Location;
-		bool bMoved;
-	};
-	void BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
-	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
-	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
-	TouchData	TouchItem;
 	
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
-	/* 
-	 * Configures input for touchscreen devices if there is a valid touch interface for doing so 
-	 *
-	 * @param	InputComponent	The input component pointer to bind controls to
-	 * @returns true if touch controls were enabled.
-	 */
-	bool EnableTouchscreenMovement(UInputComponent* InputComponent);
-
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	
 	UFUNCTION(BlueprintCallable)
 	ABaseWeapon* GetWeapon() const { return Weapon; };
 };

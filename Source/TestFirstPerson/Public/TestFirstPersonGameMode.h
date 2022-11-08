@@ -13,6 +13,8 @@ class ATestFirstPersonGameMode : public AGameModeBase
 
 public:
 	ATestFirstPersonGameMode();
+	void GameOver();
+	void RespawnRequest(AController* Controller);
 };
 
 

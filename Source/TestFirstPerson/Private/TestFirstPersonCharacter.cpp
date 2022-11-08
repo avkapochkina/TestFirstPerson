@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TestFirstPerson/Public/TestFirstPersonCharacter.h"
-
 #include "BasePickup.h"
 #include "DrawDebugHelpers.h"
 #include "Animation/AnimInstance.h"
@@ -10,8 +9,8 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
-//#include "Components/HealthComponent.h"
-#include "MotionControllerComponent.h"
+#include "HealthComponent.h"
+#include "Components/WidgetComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -42,6 +41,9 @@ ATestFirstPersonCharacter::ATestFirstPersonCharacter()
 	Mesh1P->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 
+	// Create a HealthComponent
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
+	
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 	
@@ -58,10 +60,19 @@ void ATestFirstPersonCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Mesh1P->SetHiddenInGame(false, true);
+
+	check(HealthComponent);
 }
 
-void ATestFirstPersonCharacter::OnHealthChanged(float CurrentHealth, float HealthDelta)
+void ATestFirstPersonCharacter::OnDeath()
 {
+	//PlayAnimMontage(DeathAnimMontage);
+	//DisableInput(Controller);
+	SetLifeSpan(5.0f);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	GetMesh()->SetSimulatePhysics(true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,9 +93,6 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 	// Bind pickup event
 	PlayerInputComponent->BindAction("PickupItem", IE_Pressed, this, &ATestFirstPersonCharacter::PickupItem);
 	
-	// Enable touchscreen input
-	EnableTouchscreenMovement(PlayerInputComponent);
-
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATestFirstPersonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATestFirstPersonCharacter::MoveRight);
@@ -126,69 +134,6 @@ void ATestFirstPersonCharacter::OnFire()
 		}
 	}
 }
-
-void ATestFirstPersonCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	if (TouchItem.bIsPressed == true)
-	{
-		return;
-	}
-	if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false))
-	{
-		OnFire();
-	}
-	TouchItem.bIsPressed = true;
-	TouchItem.FingerIndex = FingerIndex;
-	TouchItem.Location = Location;
-	TouchItem.bMoved = false;
-}
-
-void ATestFirstPersonCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	if (TouchItem.bIsPressed == false)
-	{
-		return;
-	}
-	TouchItem.bIsPressed = false;
-}
-
-//Commenting this section out to be consistent with FPS BP template.
-//This allows the user to turn without using the right virtual joystick
-
-//void ATestFirstPersonCharacter::TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location)
-//{
-//	if ((TouchItem.bIsPressed == true) && (TouchItem.FingerIndex == FingerIndex))
-//	{
-//		if (TouchItem.bIsPressed)
-//		{
-//			if (GetWorld() != nullptr)
-//			{
-//				UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport();
-//				if (ViewportClient != nullptr)
-//				{
-//					FVector MoveDelta = Location - TouchItem.Location;
-//					FVector2D ScreenSize;
-//					ViewportClient->GetViewportSize(ScreenSize);
-//					FVector2D ScaledDelta = FVector2D(MoveDelta.X, MoveDelta.Y) / ScreenSize;
-//					if (FMath::Abs(ScaledDelta.X) >= 4.0 / ScreenSize.X)
-//					{
-//						TouchItem.bMoved = true;
-//						float Value = ScaledDelta.X * BaseTurnRate;
-//						AddControllerYawInput(Value);
-//					}
-//					if (FMath::Abs(ScaledDelta.Y) >= 4.0 / ScreenSize.Y)
-//					{
-//						TouchItem.bMoved = true;
-//						float Value = ScaledDelta.Y * BaseTurnRate;
-//						AddControllerPitchInput(Value);
-//					}
-//					TouchItem.Location = Location;
-//				}
-//				TouchItem.Location = Location;
-//			}
-//		}
-//	}
-//}
 
 void ATestFirstPersonCharacter::MoveForward(float Value)
 {
@@ -232,11 +177,17 @@ void ATestFirstPersonCharacter::PickupItem()
 				FString::Printf(TEXT("Detaching PickupItem")));
 			if(PickupActor->bIsWeapon)
 			{
-				if(Weapon->AmmoWidget)
-					Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
-				Weapon = nullptr;
+				if(Weapon)
+				{
+					if(Weapon->AmmoWidget)
+						Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
+					Weapon = nullptr;
+				}
 			}
+			if(PickupActor->WidgetComponent->GetWidget())
+				PickupActor->WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
 			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			PickupActor = nullptr;
 			return;
 		}
@@ -244,7 +195,8 @@ void ATestFirstPersonCharacter::PickupItem()
 		// use LineTrace to pickup item in sight
 		FHitResult OutHit;
 		FVector Start = GetActorLocation();
-		FVector ForwardVector = GetViewRotation().Vector();
+		//FVector ForwardVector = GetViewRotation().Vector();
+		FVector ForwardVector =	FirstPersonCameraComponent->GetForwardVector();
 		FVector End = ForwardVector * 500.f + Start;
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(this);
@@ -271,24 +223,12 @@ void ATestFirstPersonCharacter::PickupItem()
 						Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
 				}
 				PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), PickupItemSocket);
+				if(PickupActor->WidgetComponent->GetWidget())
+					PickupActor->WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Visible);
+				PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			}
 		}
 	}
-}
-
-bool ATestFirstPersonCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
-{
-	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
-	{
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ATestFirstPersonCharacter::BeginTouch);
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &ATestFirstPersonCharacter::EndTouch);
-
-		//Commenting this out to be more consistent with FPS BP template.
-		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ATestFirstPersonCharacter::TouchUpdate);
-		return true;
-	}
-	
-	return false;
 }
 
 bool ATestFirstPersonCharacter::CanFire() const
