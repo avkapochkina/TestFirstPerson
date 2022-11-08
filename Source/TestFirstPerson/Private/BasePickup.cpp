@@ -8,23 +8,23 @@
 ABasePickup::ABasePickup()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	// PrimaryActorTick.bCanEverTick = true;
 
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
 	RootComponent = SkeletalMeshComponent;
+	SkeletalMeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
 	WidgetComponent->SetupAttachment(RootComponent);
 	WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
-	SphereComponent->InitSphereRadius(100.0f);
+	SphereComponent->InitSphereRadius(PickupDistance);
 	SphereComponent->SetCollisionProfileName(TEXT("Trigger"));
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	SphereComponent->SetupAttachment(RootComponent);
-
-	HighlightMaterial = CreateDefaultSubobject<UMaterial>(TEXT("HighlightMaterial"));
 }
 
 // Called when the game starts or when spawned
@@ -39,8 +39,6 @@ void ABasePickup::BeginPlay()
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ABasePickup::OnOverlapBegin);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &ABasePickup::OnOverlapEnd);
-	
-	SkeletalMeshComponent->SetMaterial(1, HighlightMaterial);
 }
 
 void ABasePickup::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -64,10 +62,6 @@ void ABasePickup::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, clas
 		if(Cast<APawn>(OtherActor))
 		{
 			ShowWidget();
-			if(HighlightMaterial)
-			{
-				ShowHighlight();
-			}
 		}
 	}
 }
@@ -81,17 +75,8 @@ void ABasePickup::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class 
 		if(Cast<APawn>(OtherActor))
 		{
 			HideWidget();
-			if(HighlightMaterial)
-			{
-				HideHighlight();
-			}
 		}
 	}
-}
-
-void ABasePickup::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ABasePickup::ShowWidget()
@@ -104,14 +89,4 @@ void ABasePickup::HideWidget()
 {
 	if(WidgetComponent)
 		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Collapsed);
-}
-
-void ABasePickup::ShowHighlight()
-{
-	UE_LOG(LogActor, Warning, TEXT("ADD HIGHLIGHT"));
-}
-
-void ABasePickup::HideHighlight()
-{
-	UE_LOG(LogActor, Warning, TEXT("ADD HIGHLIGHT"));
 }

@@ -26,20 +26,12 @@ protected:
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 	
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void ShowWidget();
 	
 	UFUNCTION()
 	void HideWidget();
-	
-	UFUNCTION()
-	void ShowHighlight();
-	
-	UFUNCTION()
-	void HideHighlight();
 
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
@@ -61,6 +53,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Components")
 	UWidgetComponent* WidgetComponent;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Materials")
-	class UMaterialInterface* HighlightMaterial;
+	UPROPERTY()
+	bool bIsWeapon = false;
 };

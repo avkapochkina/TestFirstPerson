@@ -3,6 +3,7 @@
 #include "TestFirstPerson/Public/TestFirstPersonCharacter.h"
 
 #include "BasePickup.h"
+#include "DrawDebugHelpers.h"
 #include "TestFirstPerson/Public/TestFirstPersonProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
@@ -145,6 +146,11 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 void ATestFirstPersonCharacter::OnFire()
 {
+	if(!bCanFire)
+	{
+		return;
+	}
+	
 	// try and fire a projectile
 	if (ProjectileClass != nullptr)
 	{
@@ -292,35 +298,51 @@ void ATestFirstPersonCharacter::LookUpAtRate(float Rate)
 
 void ATestFirstPersonCharacter::PickupItem()
 {
-	if(PickupActor)
+	if(GetWorld() != nullptr)
 	{
-		// или бросить на R ???
-		PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		return;
-	}
+		if(PickupActor)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
+				FString::Printf(TEXT("Detaching PickupItem")));
+			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			PickupActor = nullptr;
+			bCanFire = false;
+			return;
+		}
 	
-	FHitResult OutHit;
-    FVector Start = GetActorLocation();
-    FVector ForwardVector = GetActorForwardVector();
-    FVector End = ((ForwardVector * 1000.f) + Start);
-    FCollisionQueryParams CollisionParams;
-    // стукает по коллизии ???
-    if(ActorLineTraceSingle(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
-    {
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green,
-    		FString::Printf(TEXT("The Component Being Hit is: %s"), *OutHit.GetComponent()->GetName()));
-    	if(Cast<ABasePickup>(OutHit.Actor))
-    	{
-    		PickupActor = Cast<ABasePickup>(OutHit.Actor);
-    		FVector Distance = Start - PickupActor->GetActorLocation();
-    		if(PickupActor->PickupDistance < Distance.Size())
-    			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,
-     						FString::Printf(TEXT("PICKUPED")));
-    		// аттач к сокету
-    		// weapon или не weapon
-    		// вот в чём вопрос
-    	}
-    }
+		FHitResult OutHit;
+		FVector Start = GetActorLocation();
+		FVector ForwardVector = GetViewRotation().Vector();
+		FVector End = ForwardVector * 1000.f + Start;
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(this);
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
+			FString::Printf(TEXT("Trying to pick...")));
+		
+		if(GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green,
+				FString::Printf(TEXT("The Actor Being Hit is: %s"), *OutHit.Actor->GetName()));
+			DrawDebugLine(GetWorld(), Start, End, OutHit.bBlockingHit ? FColor::Blue : FColor::Red, false,
+				5.0f, 0, 2.0f);
+			
+			FVector Distance = Start - OutHit.Actor->GetActorLocation();
+			if(!Cast<ABasePickup>(OutHit.Actor))
+				return;
+			
+			PickupActor = Cast<ABasePickup>(OutHit.Actor);
+			if(PickupActor->PickupDistance < Distance.Size())
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue,
+					FString::Printf(TEXT("PICKUPED")));
+				FAttachmentTransformRules TransformRules = FAttachmentTransformRules::KeepWorldTransform;
+				// EAttachmentRule::SnapToTarget;
+				PickupActor->AttachToActor(this, TransformRules, PickupItemSocket);
+				if(PickupActor->bIsWeapon)
+					bCanFire = true;
+			}
+		}
+	}
 }
 
 bool ATestFirstPersonCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
