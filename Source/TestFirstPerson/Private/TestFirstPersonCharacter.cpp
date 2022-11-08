@@ -4,16 +4,14 @@
 
 #include "BasePickup.h"
 #include "DrawDebugHelpers.h"
-#include "TestFirstPerson/Public/TestFirstPersonProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
+//#include "Components/HealthComponent.h"
 #include "MotionControllerComponent.h"
-#include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -44,47 +42,14 @@ ATestFirstPersonCharacter::ATestFirstPersonCharacter()
 	Mesh1P->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 
-	// Create a gun mesh component
-	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
-	FP_Gun->SetOnlyOwnerSee(false);			// otherwise won't be visible in the multiplayer
-	FP_Gun->bCastDynamicShadow = false;
-	FP_Gun->CastShadow = false;
-	// FP_Gun->SetupAttachment(Mesh1P, TEXT("GripPoint"));
-	FP_Gun->SetupAttachment(RootComponent);
-
+	// Default offset from the character location for projectiles to spawn
+	GunOffset = FVector(100.0f, 0.0f, 10.0f);
+	
+	/*
 	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	FP_MuzzleLocation->SetupAttachment(FP_Gun);
 	FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
-
-	// Default offset from the character location for projectiles to spawn
-	GunOffset = FVector(100.0f, 0.0f, 10.0f);
-
-	// Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P, FP_Gun, and VR_Gun 
-	// are set in the derived blueprint asset named MyCharacter to avoid direct content references in C++.
-
-	// Create VR Controllers.
-	R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
-	R_MotionController->MotionSource = FXRMotionControllerBase::RightHandSourceId;
-	R_MotionController->SetupAttachment(RootComponent);
-	L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
-	L_MotionController->SetupAttachment(RootComponent);
-
-	// Create a gun and attach it to the right-hand VR controller.
-	// Create a gun mesh component
-	VR_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VR_Gun"));
-	VR_Gun->SetOnlyOwnerSee(false);			// otherwise won't be visible in the multiplayer
-	VR_Gun->bCastDynamicShadow = false;
-	VR_Gun->CastShadow = false;
-	VR_Gun->SetupAttachment(R_MotionController);
-	VR_Gun->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-
-	VR_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("VR_MuzzleLocation"));
-	VR_MuzzleLocation->SetupAttachment(VR_Gun);
-	VR_MuzzleLocation->SetRelativeLocation(FVector(0.000004, 53.999992, 10.000000));
-	VR_MuzzleLocation->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));		// Counteract the rotation of the VR gun model.
-
-	// Uncomment the following line to turn motion controllers on by default:
-	//bUsingMotionControllers = true;
+	*/
 }
 
 void ATestFirstPersonCharacter::BeginPlay()
@@ -92,20 +57,11 @@ void ATestFirstPersonCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	Mesh1P->SetHiddenInGame(false, true);
+}
 
-	// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
-	if (bUsingMotionControllers)
-	{
-		VR_Gun->SetHiddenInGame(false, true);
-		Mesh1P->SetHiddenInGame(true, true);
-	}
-	else
-	{
-		VR_Gun->SetHiddenInGame(true, true);
-		Mesh1P->SetHiddenInGame(false, true);
-	}
+void ATestFirstPersonCharacter::OnHealthChanged(float CurrentHealth, float HealthDelta)
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,8 +85,6 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ATestFirstPersonCharacter::OnResetVR);
-
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATestFirstPersonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATestFirstPersonCharacter::MoveRight);
@@ -146,60 +100,31 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 void ATestFirstPersonCharacter::OnFire()
 {
-	if(!bCanFire)
+	if(!CanFire())
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,
+			FString::Printf(TEXT("!CanFire()")));
 		return;
 	}
 	
-	// try and fire a projectile
-	if (ProjectileClass != nullptr)
+	if(Weapon->IsAmmoEmpty())
 	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
-		{
-			if (bUsingMotionControllers)
-			{
-				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
-				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<ATestFirstPersonProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
-			}
-			else
-			{
-				const FRotator SpawnRotation = GetControlRotation();
-				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-				const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
-
-				//Set Spawn Collision Handling Override
-				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-				// spawn the projectile at the muzzle
-				World->SpawnActor<ATestFirstPersonProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-			}
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,
+			FString::Printf(TEXT("AmmoEmpty()")));
+		return;
 	}
-
-	// try and play the sound if specified
-	if (FireSound != nullptr)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
-
+	
+	Weapon->MakeShot();
 	// try and play a firing animation if specified
-	if (FireAnimation != nullptr)
+	if (Weapon->FireAnimation != nullptr)
 	{
 		// Get the animation object for the arms mesh
 		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
 		if (AnimInstance != nullptr)
 		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
+			AnimInstance->Montage_Play(Weapon->FireAnimation, 1.f);
 		}
 	}
-}
-
-void ATestFirstPersonCharacter::OnResetVR()
-{
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
 void ATestFirstPersonCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
@@ -300,31 +225,36 @@ void ATestFirstPersonCharacter::PickupItem()
 {
 	if(GetWorld() != nullptr)
 	{
+		// drop item if player already have something in hands
 		if(PickupActor)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
 				FString::Printf(TEXT("Detaching PickupItem")));
+			if(PickupActor->bIsWeapon)
+			{
+				if(Weapon->AmmoWidget)
+					Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
+				Weapon = nullptr;
+			}
 			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			PickupActor = nullptr;
-			bCanFire = false;
 			return;
 		}
-	
+
+		// use LineTrace to pickup item in sight
 		FHitResult OutHit;
 		FVector Start = GetActorLocation();
 		FVector ForwardVector = GetViewRotation().Vector();
-		FVector End = ForwardVector * 1000.f + Start;
+		FVector End = ForwardVector * 500.f + Start;
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(this);
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
-			FString::Printf(TEXT("Trying to pick...")));
 		
 		if(GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green,
-				FString::Printf(TEXT("The Actor Being Hit is: %s"), *OutHit.Actor->GetName()));
 			DrawDebugLine(GetWorld(), Start, End, OutHit.bBlockingHit ? FColor::Blue : FColor::Red, false,
 				5.0f, 0, 2.0f);
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green,
+				FString::Printf(TEXT("The Actor Being Hit is: %s"), *OutHit.Actor->GetName()));
 			
 			FVector Distance = Start - OutHit.Actor->GetActorLocation();
 			if(!Cast<ABasePickup>(OutHit.Actor))
@@ -333,13 +263,14 @@ void ATestFirstPersonCharacter::PickupItem()
 			PickupActor = Cast<ABasePickup>(OutHit.Actor);
 			if(PickupActor->PickupDistance < Distance.Size())
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue,
-					FString::Printf(TEXT("PICKUPED")));
-				FAttachmentTransformRules TransformRules = FAttachmentTransformRules::KeepWorldTransform;
-				// EAttachmentRule::SnapToTarget;
-				PickupActor->AttachToActor(this, TransformRules, PickupItemSocket);
-				if(PickupActor->bIsWeapon)
-					bCanFire = true;
+				// setup weapon and it's widget
+				if(PickupActor && PickupActor->bIsWeapon)
+				{
+					Weapon = Cast<ABaseWeapon>(PickupActor);
+					if(Weapon->AmmoWidget)
+						Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
+				}
+				PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), PickupItemSocket);
 			}
 		}
 	}
@@ -358,4 +289,13 @@ bool ATestFirstPersonCharacter::EnableTouchscreenMovement(class UInputComponent*
 	}
 	
 	return false;
+}
+
+bool ATestFirstPersonCharacter::CanFire() const
+{
+	if(!PickupActor)
+		return false;
+	if(!Weapon)
+		return false;
+	return PickupActor->bIsWeapon;
 }

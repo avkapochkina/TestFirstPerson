@@ -21,7 +21,6 @@ ABasePickup::ABasePickup()
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
 	SphereComponent->InitSphereRadius(PickupDistance);
-	SphereComponent->SetCollisionProfileName(TEXT("Trigger"));
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	SphereComponent->SetupAttachment(RootComponent);
@@ -35,7 +34,6 @@ void ABasePickup::BeginPlay()
 	check(WidgetComponent);
 	
 	WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
-	UE_LOG(LogActor, Warning, TEXT("ABasePickup::BeginPlay"));
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ABasePickup::OnOverlapBegin);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &ABasePickup::OnOverlapEnd);
@@ -44,13 +42,11 @@ void ABasePickup::BeginPlay()
 void ABasePickup::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
-	UE_LOG(LogActor, Warning, TEXT("ABasePickup::NotifyActorBeginOverlap"));
 }
 
 void ABasePickup::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
-	UE_LOG(LogActor, Warning, TEXT("ABasePickup::NotifyActorEndOverlap"));
 }
 
 void ABasePickup::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
@@ -79,13 +75,13 @@ void ABasePickup::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class 
 	}
 }
 
-void ABasePickup::ShowWidget()
+void ABasePickup::ShowWidget() const
 {
 	if(WidgetComponent)
 		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Visible);
 }
 
-void ABasePickup::HideWidget()
+void ABasePickup::HideWidget() const
 {
 	if(WidgetComponent)
 		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Collapsed);

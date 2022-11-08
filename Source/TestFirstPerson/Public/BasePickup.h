@@ -28,10 +28,10 @@ protected:
 public:
 
 	UFUNCTION()
-	void ShowWidget();
+	void ShowWidget() const;
 	
 	UFUNCTION()
-	void HideWidget();
+	void HideWidget() const;
 
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,

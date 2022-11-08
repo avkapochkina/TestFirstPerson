@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseWeapon.h"
 #include "GameFramework/Character.h"
+#include "TestFirstPerson/Public/BaseAmmoWidget.h"
 #include "TestFirstPersonCharacter.generated.h"
 
 class UInputComponent;
@@ -14,6 +16,7 @@ class UMotionControllerComponent;
 class UAnimMontage;
 class USoundBase;
 class ABasePickup;
+class UHealthComponent;
 
 UCLASS(config=Game)
 
@@ -25,40 +28,20 @@ class ATestFirstPersonCharacter : public ACharacter
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* Mesh1P;
 
-	/** Gun mesh: 1st person view (seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USkeletalMeshComponent* FP_Gun;
-
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USceneComponent* FP_MuzzleLocation;
 
-	/** Gun mesh: VR view (attached to the VR controller directly, no arm, just the actual gun) */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USkeletalMeshComponent* VR_Gun;
-
-	/** Location on VR gun mesh where projectiles should spawn. */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USceneComponent* VR_MuzzleLocation;
-
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
-
-	/** Motion controller (right hand) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UMotionControllerComponent* R_MotionController;
-
-	/** Motion controller (left hand) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UMotionControllerComponent* L_MotionController;
 
 public:
 	ATestFirstPersonCharacter();
 
 protected:
 	virtual void BeginPlay();
-
+	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta);
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -75,26 +58,11 @@ public:
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
 	TSubclassOf<class ATestFirstPersonProjectile> ProjectileClass;
-
-	/** Sound to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* FireSound;
-
-	/** AnimMontage to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FireAnimation;
-
-	/** Whether to use motion controller location for aiming. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	uint8 bUsingMotionControllers : 1;
-
+	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 protected:
 	
 	/** Fires a projectile. */
 	void OnFire();
-
-	/** Resets HMD orientation and position in VR. */
-	void OnResetVR();
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -103,15 +71,21 @@ protected:
 	void MoveRight(float Val);
 	
 	void PickupItem();
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	UHealthComponent* HealthComponent;
+	
 	UPROPERTY()
 	ABasePickup* PickupActor;
+	
+	UPROPERTY()
+	ABaseWeapon* Weapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FName PickupItemSocket = "GripPoint";
 
-	UPROPERTY()
-	bool bCanFire;
+	UFUNCTION()
+	bool CanFire() const;
 	/**
 	 * Called via input to turn at a given rate.
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
@@ -155,5 +129,6 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
+	UFUNCTION(BlueprintCallable)
+	ABaseWeapon* GetWeapon() const { return Weapon; };
 };
