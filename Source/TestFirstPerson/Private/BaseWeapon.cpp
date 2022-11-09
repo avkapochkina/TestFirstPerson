@@ -15,10 +15,6 @@ ABaseWeapon::ABaseWeapon()
 	SkeletalMeshComponent->CastShadow = false;
 	RootComponent = SkeletalMeshComponent;
 	
-	//AmmoWidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
-	//AmmoWidgetComponent->SetupAttachment(RootComponent);
-	//WidgetComponent->SetWidget(AmmoWidget);
-	
 	MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	MuzzleLocation->SetupAttachment(SkeletalMeshComponent);
 	MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
@@ -34,18 +30,12 @@ ABaseWeapon::ABaseWeapon()
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	AmmoWidget = CreateWidget<UBaseAmmoWidget>(GetWorld(), AmmoWidgetClass);
 	if(AmmoWidget)
 	{
-		WidgetComponent->GetWidget()->AddToViewport();
-		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
-		WidgetComponent->SetWidget(AmmoWidget);
-		//AmmoWidget->AddToViewport();
-		//AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
-	}
-	else
-	{
-		UE_LOG(LogActor, Warning, TEXT("!AmmoWidget"));
+		AmmoWidget->AddToViewport();
+		AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -78,6 +68,21 @@ void ABaseWeapon::MakeShot()
 	}
 	
 	DecreaseAmmo();
+}
+
+bool ABaseWeapon::CanReload() const
+{
+	return CurrentBullets < MaxBullets && CurrentClips > 0;
+}
+
+void ABaseWeapon::MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd)
+{
+	if (!GetWorld()) return;
+	
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(GetOwner());
+	CollisionQueryParams.bReturnPhysicalMaterial = true;
+	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, CollisionQueryParams);
 }
 
 void ABaseWeapon::DecreaseAmmo()

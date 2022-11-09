@@ -17,9 +17,18 @@ public:
 	// Sets default values for this actor's properties
 	ABaseWeapon();
 
-	UFUNCTION()
-	void MakeShot();
+	virtual void MakeShot();
 
+	virtual void StartFire() {};
+	
+	virtual void StopFire() {};
+
+	virtual void Reload() {};
+
+	bool CanReload() const;
+	
+	virtual void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
+	
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USceneComponent* MuzzleLocation;
@@ -36,7 +45,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Widget)
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	//class UBaseAmmoWidget* AmmoWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUserWidget> AmmoWidgetClass;
+
+	UPROPERTY()
 	UBaseAmmoWidget* AmmoWidget;
 	
 	/** Gun muzzle's offset from the characters location */

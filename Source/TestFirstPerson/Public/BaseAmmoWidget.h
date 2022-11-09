@@ -13,13 +13,17 @@
 UCLASS()
 class TESTFIRSTPERSON_API UBaseAmmoWidget : public UUserWidget
 {
+	GENERATED_BODY()
+	
 public:
 	virtual void NativeConstruct() override;
-	GENERATED_BODY()
 
 	UFUNCTION()
-	void UpdateWidget(const int8& Clips, const int8& Bullets);
+	void UpdateWidget(const int8 Clips, const int8 Bullets);
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* TextBlock;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	FText Text;
 };

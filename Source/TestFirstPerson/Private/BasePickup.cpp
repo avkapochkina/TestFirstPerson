@@ -29,8 +29,8 @@ void ABasePickup::BeginPlay()
 	Super::BeginPlay();
 	
 	check(WidgetComponent);
-	
-	WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
+	if(WidgetComponent)
+		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ABasePickup::OnOverlapBegin);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &ABasePickup::OnOverlapEnd);

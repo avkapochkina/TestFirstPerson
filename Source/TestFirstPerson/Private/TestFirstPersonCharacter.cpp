@@ -171,7 +171,6 @@ void ATestFirstPersonCharacter::PickupItem()
 					Weapon = nullptr;
 				}
 			}
-			//PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			PickupActor = nullptr;
@@ -188,7 +187,6 @@ void ATestFirstPersonCharacter::PickupItem()
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(this);
 		
-		// заменить на угол между углом вида и вектором между павном и актором?
 		if(GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
 		{
 			// debug info
