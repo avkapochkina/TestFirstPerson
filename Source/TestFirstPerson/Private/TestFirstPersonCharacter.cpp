@@ -171,6 +171,7 @@ void ATestFirstPersonCharacter::PickupItem()
 					Weapon = nullptr;
 				}
 			}
+			//PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			PickupActor = nullptr;
@@ -211,7 +212,10 @@ void ATestFirstPersonCharacter::PickupItem()
 				}
 				// hide pickup widget and disable collision while item is in hands
 				PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+				//PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+				//	true), PickupItemSocket);
+				
+				PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 					true), PickupItemSocket);
 			}
 		}
