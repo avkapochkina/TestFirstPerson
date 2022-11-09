@@ -95,7 +95,9 @@ void ABaseWeapon::DecreaseAmmo()
 	CurrentBullets--;
 	
 	if(AmmoWidget)
+	{
 		AmmoWidget->UpdateWidget(CurrentClips, CurrentBullets);
+	}
 }
 
 bool ABaseWeapon::IsAmmoEmpty() const

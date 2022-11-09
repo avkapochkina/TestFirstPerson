@@ -45,11 +45,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation;
 	
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	//class UBaseAmmoWidget* AmmoWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UUserWidget> AmmoWidgetClass;
-
+	
+	/** Widget that shows current ammo on the top of the screen */
 	UPROPERTY()
 	UBaseAmmoWidget* AmmoWidget;
 	

@@ -10,9 +10,6 @@ void UBaseAmmoWidget::NativeConstruct()
 
 void UBaseAmmoWidget::UpdateWidget(const int8 Clips, const int8 Bullets)
 {
-	FString String = Clips + " / " + Bullets;
-	if(GetVisibility() == ESlateVisibility::Visible)
-	{
-		TextBlock->SetText(FText::FromString(String));
-	}
+	FString String = FString::FromInt(Clips) + " / " + FString::FromInt(Bullets);
+	TextBlock->SetText(FText::FromString(String));
 }

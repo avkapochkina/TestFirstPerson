@@ -206,15 +206,18 @@ void ATestFirstPersonCharacter::PickupItem()
 				{
 					Weapon = Cast<ABaseWeapon>(PickupActor);
 					if(Weapon->AmmoWidget)
+					{
 						Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
+						Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
+					}
 				}
+				
 				// hide pickup widget and disable collision while item is in hands
 				PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				//PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
-				//	true), PickupItemSocket);
-				
 				PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 					true), PickupItemSocket);
+				//PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+				//	true), PickupItemSocket);
 			}
 		}
 	}
