@@ -79,6 +79,9 @@ protected:
 	UPROPERTY()
 	ABasePickup* PickupActor;
 	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
+	float PickupDistance = 300.0;
+	
 	UPROPERTY()
 	ABaseWeapon* Weapon;
 

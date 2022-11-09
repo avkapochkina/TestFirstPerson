@@ -10,10 +10,10 @@
 ABaseWeapon::ABaseWeapon()
 {
 	// setup a gun mesh component
-	SkeletalMeshComponent->SetOnlyOwnerSee(false);
-	SkeletalMeshComponent->bCastDynamicShadow = false;
-	SkeletalMeshComponent->CastShadow = false;
 	RootComponent = SkeletalMeshComponent;
+	SkeletalMeshComponent->SetOnlyOwnerSee(false);
+	SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SkeletalMeshComponent->SetSimulatePhysics(true);
 	
 	MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	MuzzleLocation->SetupAttachment(SkeletalMeshComponent);

@@ -10,8 +10,10 @@ ABasePickup::ABasePickup()
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
 	RootComponent = SkeletalMeshComponent;
 	SkeletalMeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
+	//SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SkeletalMeshComponent->SetSimulatePhysics(true);
+	
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
 	WidgetComponent->SetupAttachment(RootComponent);
 	WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);

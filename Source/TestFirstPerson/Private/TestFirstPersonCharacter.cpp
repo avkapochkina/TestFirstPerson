@@ -72,9 +72,9 @@ void ATestFirstPersonCharacter::OnDeath()
 void ATestFirstPersonCharacter::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
-	UE_LOG(LogActor, Verbose, TEXT("ATestFirstPersonCharacter::OnTakeAnyDamageHandle"));
 	if (Damage <= 0.0f || HealthComponent->IsDead()) return;
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - Damage);
+	UE_LOG(LogActor, Verbose, TEXT("Health = %f"), HealthComponent->GetHealth());
 	if (HealthComponent->IsDead())
 	{
 		ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(DamagedActor);
@@ -187,6 +187,8 @@ void ATestFirstPersonCharacter::PickupItem()
 			}
 			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			PickupActor->SkeletalMeshComponent->SetSimulatePhysics(true);
+			PickupActor->SkeletalMeshComponent->SetEnableGravity(true);
 			PickupActor = nullptr;
 			return;
 		}
@@ -197,7 +199,7 @@ void ATestFirstPersonCharacter::PickupItem()
 		FirstPersonCameraComponent->GetSocketWorldLocationAndRotation(FirstPersonCameraComponent->GetAttachSocketName(),
 			Start, Rotation);
 		FVector ForwardVector =	FirstPersonCameraComponent->GetForwardVector();
-		FVector End = ForwardVector * 500.f + Start;
+		FVector End = ForwardVector * PickupDistance + Start;
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(this);
 		
@@ -211,28 +213,23 @@ void ATestFirstPersonCharacter::PickupItem()
 			if(!Cast<ABasePickup>(OutHit.Actor))
 				return;
 			ABasePickup* HitActor = Cast<ABasePickup>(OutHit.Actor);
-			FVector Distance = Start - OutHit.Actor->GetActorLocation();
-			if(HitActor->PickupDistance < Distance.Size())
+			PickupActor = HitActor;
+			// setup weapon and it's widget
+			if(PickupActor && PickupActor->bIsWeapon)
 			{
-				PickupActor = HitActor;
-				// setup weapon and it's widget
-				if(PickupActor && PickupActor->bIsWeapon)
+				Weapon = Cast<ABaseWeapon>(PickupActor);
+				if(Weapon->AmmoWidget)
 				{
-					Weapon = Cast<ABaseWeapon>(PickupActor);
-					if(Weapon->AmmoWidget)
-					{
-						Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
-						Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
-					}
+					Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
+					Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
 				}
-				
-				// hide pickup widget and disable collision while item is in hands
-				PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
-					true), PickupItemSocket);
-				//PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
-				//	true), PickupItemSocket);
 			}
+			// hide pickup widget and disable collision while item is in hands
+			PickupActor->SkeletalMeshComponent->SetSimulatePhysics(false);
+			PickupActor->SkeletalMeshComponent->SetEnableGravity(false);
+			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+				true), PickupItemSocket);
 		}
 	}
 }
