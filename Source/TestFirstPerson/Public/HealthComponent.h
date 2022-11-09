@@ -45,9 +45,9 @@ protected:
 
 	float Health;
 	
-	UFUNCTION()
-	void OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-		class AController* InstigatedBy, AActor* DamageCauser);
+	//UFUNCTION()
+	//void OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+	//	class AController* InstigatedBy, AActor* DamageCauser);
 
 public:
 	// Called every frame

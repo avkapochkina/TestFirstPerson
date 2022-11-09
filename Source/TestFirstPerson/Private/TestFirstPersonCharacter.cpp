@@ -10,6 +10,7 @@
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
+#include "TestFirstPersonGameMode.h"
 #include "Components/WidgetComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -53,6 +54,8 @@ void ATestFirstPersonCharacter::BeginPlay()
 	Mesh1P->SetHiddenInGame(false, true);
 
 	check(HealthComponent);
+	
+	OnTakeAnyDamage.AddDynamic(this,&ATestFirstPersonCharacter::OnTakeAnyDamageHandle);
 }
 
 void ATestFirstPersonCharacter::OnDeath()
@@ -66,8 +69,21 @@ void ATestFirstPersonCharacter::OnDeath()
 	GetMesh()->SetSimulatePhysics(true);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
+void ATestFirstPersonCharacter::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatedBy, AActor* DamageCauser)
+{
+	UE_LOG(LogActor, Verbose, TEXT("ATestFirstPersonCharacter::OnTakeAnyDamageHandle"));
+	if (Damage <= 0.0f || HealthComponent->IsDead()) return;
+	HealthComponent->SetHealth(HealthComponent->GetHealth() - Damage);
+	if (HealthComponent->IsDead())
+	{
+		ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(DamagedActor);
+		Character->OnDeath();
+		const auto GameMode = GetWorld()->GetAuthGameMode<ATestFirstPersonGameMode>();
+		if (!GameMode) return;
+		GameMode->GameOver();
+	}
+}
 
 void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -100,13 +116,11 @@ void ATestFirstPersonCharacter::OnFire()
 {
 	if(!CanFire())
 	{
-		UE_LOG(LogActor, Verbose, TEXT("!CanFire()"));
 		return;
 	}
 	
 	if(Weapon->IsAmmoEmpty())
 	{
-		UE_LOG(LogActor, Verbose, TEXT("AmmoEmpty()"));
 		return;
 	}
 	

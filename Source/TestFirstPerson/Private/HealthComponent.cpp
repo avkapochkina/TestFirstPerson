@@ -21,11 +21,11 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const auto Owner = GetOwner();
-	if (Owner)
-	{
-		Owner->OnTakeAnyDamage.AddDynamic(this,&UHealthComponent::OnTakeAnyDamageHandle);
-	}
+	//const auto Owner = GetOwner();
+	//if (Owner)
+	//{
+	//	Owner->OnTakeAnyDamage.AddDynamic(this,&UHealthComponent::OnTakeAnyDamageHandle);
+	//}
 }
 
 // Called every frame
@@ -57,7 +57,7 @@ void UHealthComponent::Respawn(int32 RespawnTime)
 	//GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this,
 	//	&UHealthComponent::RespawnTimerUpdate, 1.0f, true);
 }
-
+/*
 void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
                                              AController* InstigatedBy, AActor* DamageCauser)
 {
@@ -81,3 +81,4 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 		}
 	}
 }
+*/

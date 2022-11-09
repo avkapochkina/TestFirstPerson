@@ -57,9 +57,12 @@ public:
 	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 	
 	virtual void OnDeath();
+	
+	UFUNCTION()
+	void OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+		class AController* InstigatedBy, AActor* DamageCauser);
+	
 protected:
-	void OnFire();
-
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -67,6 +70,8 @@ protected:
 	void MoveRight(float Val);
 	
 	void PickupItem();
+	
+	void OnFire();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;

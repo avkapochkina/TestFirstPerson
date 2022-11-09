@@ -3,20 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
-#include "DamageTrigger.generated.h"
-
-class USphereComponent;
+#include "Trigger.generated.h"
 
 UCLASS()
-class TESTFIRSTPERSON_API ADamageTrigger : public AActor
+class TESTFIRSTPERSON_API ATrigger : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ADamageTrigger();
+	ATrigger();
 	
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+    
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	
+public:
 	UPROPERTY(VisibleDefaultsOnly, Category="Components")
 	UStaticMeshComponent* MeshComponent;
 
@@ -28,14 +34,6 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constantes")
 	float Damage = 100.0;
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 	
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
