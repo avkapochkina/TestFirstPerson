@@ -49,10 +49,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Components")
 	USphereComponent* SphereComponent;
-	
+
+	// pickup widget shown in Distance < PickupDistance
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Components")
 	UWidgetComponent* WidgetComponent;
 
+	// is it weapon
 	UPROPERTY()
 	bool bIsWeapon = false;
 };

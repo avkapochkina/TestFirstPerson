@@ -43,15 +43,6 @@ ATestFirstPersonCharacter::ATestFirstPersonCharacter()
 
 	// Create a HealthComponent
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
-	
-	// Default offset from the character location for projectiles to spawn
-	GunOffset = FVector(100.0f, 0.0f, 10.0f);
-	
-	/*
-	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
-	FP_MuzzleLocation->SetupAttachment(FP_Gun);
-	FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
-	*/
 }
 
 void ATestFirstPersonCharacter::BeginPlay()
@@ -82,7 +73,6 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 {
 	// set up gameplay key bindings
 	check(PlayerInputComponent);
-
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
@@ -110,15 +100,13 @@ void ATestFirstPersonCharacter::OnFire()
 {
 	if(!CanFire())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,
-			FString::Printf(TEXT("!CanFire()")));
+		UE_LOG(LogActor, Verbose, TEXT("!CanFire()"));
 		return;
 	}
 	
 	if(Weapon->IsAmmoEmpty())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red,
-			FString::Printf(TEXT("AmmoEmpty()")));
+		UE_LOG(LogActor, Verbose, TEXT("AmmoEmpty()"));
 		return;
 	}
 	
@@ -173,8 +161,7 @@ void ATestFirstPersonCharacter::PickupItem()
 		// drop item if player already have something in hands
 		if(PickupActor)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Cyan,
-				FString::Printf(TEXT("Detaching PickupItem")));
+			UE_LOG(LogActor, Verbose, TEXT("Detaching PickupItem"));
 			if(PickupActor->bIsWeapon)
 			{
 				if(Weapon)
@@ -184,37 +171,37 @@ void ATestFirstPersonCharacter::PickupItem()
 					Weapon = nullptr;
 				}
 			}
-			if(PickupActor->WidgetComponent->GetWidget())
-				PickupActor->WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
 			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			PickupActor = nullptr;
 			return;
 		}
 
-		// use LineTrace to pickup item in sight
+		// use LineTrace to check item in sight
 		FHitResult OutHit;
-		FVector Start = GetActorLocation();
-		//FVector ForwardVector = GetViewRotation().Vector();
+		FVector Start; FRotator Rotation;
+		FirstPersonCameraComponent->GetSocketWorldLocationAndRotation(FirstPersonCameraComponent->GetAttachSocketName(),
+			Start, Rotation);
 		FVector ForwardVector =	FirstPersonCameraComponent->GetForwardVector();
 		FVector End = ForwardVector * 500.f + Start;
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(this);
 		
+		// заменить на угол между углом вида и вектором между павном и актором?
 		if(GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
 		{
+			// debug info
 			DrawDebugLine(GetWorld(), Start, End, OutHit.bBlockingHit ? FColor::Blue : FColor::Red, false,
 				5.0f, 0, 2.0f);
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green,
-				FString::Printf(TEXT("The Actor Being Hit is: %s"), *OutHit.Actor->GetName()));
-			
-			FVector Distance = Start - OutHit.Actor->GetActorLocation();
+			UE_LOG(LogActor, Verbose, TEXT("The Actor Being Hit is: %s"), *OutHit.Actor->GetName());
+			// exit if the actor isn't pickup actor or out of pickup range
 			if(!Cast<ABasePickup>(OutHit.Actor))
 				return;
-			
-			PickupActor = Cast<ABasePickup>(OutHit.Actor);
-			if(PickupActor->PickupDistance < Distance.Size())
+			ABasePickup* HitActor = Cast<ABasePickup>(OutHit.Actor);
+			FVector Distance = Start - OutHit.Actor->GetActorLocation();
+			if(HitActor->PickupDistance < Distance.Size())
 			{
+				PickupActor = HitActor;
 				// setup weapon and it's widget
 				if(PickupActor && PickupActor->bIsWeapon)
 				{
@@ -222,10 +209,10 @@ void ATestFirstPersonCharacter::PickupItem()
 					if(Weapon->AmmoWidget)
 						Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
 				}
-				PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), PickupItemSocket);
-				if(PickupActor->WidgetComponent->GetWidget())
-					PickupActor->WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Visible);
+				// hide pickup widget and disable collision while item is in hands
 				PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				PickupActor->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+					true), PickupItemSocket);
 			}
 		}
 	}

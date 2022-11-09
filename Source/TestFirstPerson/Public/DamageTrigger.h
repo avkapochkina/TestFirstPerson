@@ -16,6 +16,9 @@ class TESTFIRSTPERSON_API ADamageTrigger : public AActor
 public:
 	// Sets default values for this actor's properties
 	ADamageTrigger();
+	
+	UPROPERTY(VisibleDefaultsOnly, Category="Components")
+	UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Components")
 	USphereComponent* SphereComponent;

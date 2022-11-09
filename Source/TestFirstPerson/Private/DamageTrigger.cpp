@@ -11,11 +11,15 @@ ADamageTrigger::ADamageTrigger()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
+	RootComponent = MeshComponent;
+	
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
 	SphereComponent->InitSphereRadius(Distance);
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	RootComponent = SphereComponent;
+
+	SphereComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -23,6 +27,7 @@ void ADamageTrigger::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ADamageTrigger::OnOverlapBegin);
 }
 
 void ADamageTrigger::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -36,7 +41,7 @@ void ADamageTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 	UE_LOG(LogActor, Warning, TEXT("ABasePickup::OnOverlapBegin"));
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		FDamageEvent Event(UDamageType::StaticClass());
+		const FDamageEvent Event(UDamageType::StaticClass());
 		OtherActor->TakeDamage(Damage, Event, GetInstigatorController(), this);
 	}
 }

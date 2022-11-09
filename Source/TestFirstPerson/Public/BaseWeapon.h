@@ -36,7 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation;
 	
-	UPROPERTY(VisibleDefaultsOnly, Category = Widget)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Widget)
 	UBaseAmmoWidget* AmmoWidget;
 	
 	/** Gun muzzle's offset from the characters location */
