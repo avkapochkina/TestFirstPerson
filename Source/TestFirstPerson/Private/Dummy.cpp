@@ -3,6 +3,7 @@
 
 #include "Dummy.h"
 #include "HealthComponent.h"
+#include "Blueprint/UserWidget.h"
 
 
 // Sets default values
@@ -13,6 +14,8 @@ ADummy::ADummy()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	RootComponent = MeshComponent;
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
+	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
+	//WidgetComponent->AttachToComponent(RootComponent);
 }
 
 void ADummy::OnDeath()
@@ -26,15 +29,12 @@ void ADummy::BeginPlay()
 	Super::BeginPlay();
 	
 	check(HealthComponent);
-	
-	OnTakeAnyDamage.AddDynamic(this,&ADummy::OnTakeAnyDamageHandle);
-}
-
-void ADummy::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-	AController* InstigatedBy, AActor* DamageCauser)
-{
-	UE_LOG(LogActor, Verbose, TEXT("ADummy::OnTakeAnyDamageHandle"));
-	//
+	HealthWidget = CreateWidget<UUserWidget>(GetWorld(), HealthWidgetClass);
+	if(HealthWidget)
+	{
+		WidgetComponent->SetWidget(HealthWidget);
+		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 // Called every frame

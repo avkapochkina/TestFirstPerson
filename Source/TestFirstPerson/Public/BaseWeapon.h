@@ -23,7 +23,7 @@ public:
 	
 	virtual void StopFire() {};
 
-	virtual void Reload() {};
+	bool Reload();
 
 	bool CanReload() const;
 	
@@ -44,6 +44,10 @@ public:
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation;
+	
+	/** AnimMontage to play each time we reload */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	UAnimMontage* ReloadAnimation;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UUserWidget> AmmoWidgetClass;

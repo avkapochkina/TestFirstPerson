@@ -54,8 +54,6 @@ void ATestFirstPersonCharacter::BeginPlay()
 	Mesh1P->SetHiddenInGame(false, true);
 
 	check(HealthComponent);
-	
-	OnTakeAnyDamage.AddDynamic(this,&ATestFirstPersonCharacter::OnTakeAnyDamageHandle);
 }
 
 void ATestFirstPersonCharacter::OnDeath()
@@ -65,24 +63,8 @@ void ATestFirstPersonCharacter::OnDeath()
 	SetLifeSpan(5.0f);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetSimulatePhysics(true);
-}
-
-void ATestFirstPersonCharacter::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-	AController* InstigatedBy, AActor* DamageCauser)
-{
-	if (Damage <= 0.0f || HealthComponent->IsDead()) return;
-	HealthComponent->SetHealth(HealthComponent->GetHealth() - Damage);
-	UE_LOG(LogActor, Verbose, TEXT("Health = %f"), HealthComponent->GetHealth());
-	if (HealthComponent->IsDead())
-	{
-		ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(DamagedActor);
-		Character->OnDeath();
-		const auto GameMode = GetWorld()->GetAuthGameMode<ATestFirstPersonGameMode>();
-		if (!GameMode) return;
-		GameMode->GameOver();
-	}
 }
 
 void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -98,6 +80,9 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 	// Bind pickup event
 	PlayerInputComponent->BindAction("PickupItem", IE_Pressed, this, &ATestFirstPersonCharacter::PickupItem);
+	
+	// Bind reload event
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATestFirstPersonCharacter::Reload);
 	
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATestFirstPersonCharacter::MoveForward);
@@ -133,6 +118,21 @@ void ATestFirstPersonCharacter::OnFire()
 		if (AnimInstance != nullptr)
 		{
 			AnimInstance->Montage_Play(Weapon->FireAnimation, 1.f);
+		}
+	}
+}
+
+void ATestFirstPersonCharacter::Reload()
+{
+	if(Weapon)
+	{
+		if(Weapon->Reload() && Weapon->ReloadAnimation != nullptr)
+		{
+			UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
+			if (AnimInstance != nullptr)
+			{
+				AnimInstance->Montage_Play(Weapon->ReloadAnimation, 1.f);
+			}
 		}
 	}
 }

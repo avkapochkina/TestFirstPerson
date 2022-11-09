@@ -58,10 +58,6 @@ public:
 	
 	virtual void OnDeath();
 	
-	UFUNCTION()
-	void OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-		class AController* InstigatedBy, AActor* DamageCauser);
-	
 protected:
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -72,6 +68,8 @@ protected:
 	void PickupItem();
 	
 	void OnFire();
+	
+	void Reload();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;

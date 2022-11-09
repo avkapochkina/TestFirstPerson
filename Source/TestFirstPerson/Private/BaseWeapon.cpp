@@ -70,6 +70,16 @@ void ABaseWeapon::MakeShot()
 	DecreaseAmmo();
 }
 
+bool ABaseWeapon::Reload()
+{
+	if(CanReload())
+	{
+		ChangeClip();
+		return true;
+	}
+	return false;
+}
+
 bool ABaseWeapon::CanReload() const
 {
 	return CurrentBullets < MaxBullets && CurrentClips > 0;

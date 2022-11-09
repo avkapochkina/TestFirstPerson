@@ -2,11 +2,7 @@
 
 
 #include "HealthComponent.h"
-
-#include "Dummy.h"
 #include "TestFirstPersonCharacter.h"
-#include "TestFirstPersonGameMode.h"
-
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -21,11 +17,11 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//const auto Owner = GetOwner();
-	//if (Owner)
-	//{
-	//	Owner->OnTakeAnyDamage.AddDynamic(this,&UHealthComponent::OnTakeAnyDamageHandle);
-	//}
+	const auto Owner = GetOwner();
+	if (Owner)
+	{
+		Owner->OnTakeAnyDamage.AddDynamic(this,&UHealthComponent::OnTakeAnyDamageHandle);
+	}
 }
 
 // Called every frame
@@ -57,28 +53,23 @@ void UHealthComponent::Respawn(int32 RespawnTime)
 	//GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this,
 	//	&UHealthComponent::RespawnTimerUpdate, 1.0f, true);
 }
-/*
+
 void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
                                              AController* InstigatedBy, AActor* DamageCauser)
 {
-	if (Damage <= 0.0f || IsDead()) return;
-	SetHealth(Health - Damage);
+	if (Damage <= 0.0f) return;
+	SetHealth(FMath::Clamp(Health - Damage, 0.f, MaxHealth));
+	
+	UE_LOG(LogActor, Verbose, TEXT("Health = %f"), GetHealth());
 	if (IsDead())
 	{
 		if(Cast<ATestFirstPersonCharacter>(DamagedActor))
 		{
 			ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(DamagedActor);
 			Character->OnDeath();
-			const auto GameMode = GetWorld()->GetAuthGameMode<ATestFirstPersonGameMode>();
-			if (!GameMode) return;
-			GameMode->GameOver();
-		}
-		
-		if(Cast<ADummy>(DamagedActor))
-		{
-			ADummy* Actor = Cast<ADummy>(DamagedActor);
-			Actor->OnDeath();
+			//const auto GameMode = GetWorld()->GetAuthGameMode<ATestFirstPersonGameMode>();
+			//if (!GameMode) return;
+			//GameMode->GameOver();
 		}
 	}
 }
-*/
