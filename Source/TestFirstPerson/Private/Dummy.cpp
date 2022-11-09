@@ -29,10 +29,10 @@ void ADummy::BeginPlay()
 	Super::BeginPlay();
 	
 	check(HealthComponent);
-	HealthWidget = CreateWidget<UUserWidget>(GetWorld(), HealthWidgetClass);
-	if(HealthWidget)
+	HealthWidget_BP = CreateWidget<UUserWidget>(GetWorld(), HealthWidgetClass);
+	if(HealthWidget_BP)
 	{
-		WidgetComponent->SetWidget(HealthWidget);
+		WidgetComponent->SetWidget(HealthWidget_BP);
 		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Visible);
 	}
 }

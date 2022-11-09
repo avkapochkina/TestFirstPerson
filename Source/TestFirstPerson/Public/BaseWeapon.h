@@ -27,15 +27,11 @@ public:
 
 	bool CanReload() const;
 	
-	virtual void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
+	//virtual void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
 	
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USceneComponent* MuzzleLocation;
-	
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<class ATestFirstPersonProjectile> ProjectileClass;
 
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
@@ -68,13 +64,17 @@ protected:
 	
 	UFUNCTION()
 	void ChangeClip();
-	
+
+	AController* GetController() const;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Constants")
 	uint8 MaxClips = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Constants")
 	uint8 MaxBullets = 10;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Constants")
+	float Damage = 10.f;
 	
 	UPROPERTY(BlueprintReadOnly)
 	uint8 CurrentClips;
@@ -85,6 +85,5 @@ public:
 	UFUNCTION()
 	bool IsAmmoEmpty() const;
 	
-	UFUNCTION()
-	void AttachWeapon(USkeletalMeshComponent* MeshComponent);
+	bool bIsShooting = false;
 };

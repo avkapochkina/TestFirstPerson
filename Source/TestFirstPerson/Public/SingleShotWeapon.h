@@ -4,35 +4,31 @@
 
 #include "CoreMinimal.h"
 #include "BaseWeapon.h"
-#include "RifleWeapon.generated.h"
+#include "SingleShotWeapon.generated.h"
 
 UCLASS()
-class TESTFIRSTPERSON_API ARifleWeapon : public ABaseWeapon
+class TESTFIRSTPERSON_API ASingleShotWeapon : public ABaseWeapon
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ARifleWeapon();
+	ASingleShotWeapon();
 
-	virtual void MakeShot();
+	virtual void MakeShot() override;
 
-	virtual void StartFire();
+	virtual void StartFire() override;
 	
-	virtual void StopFire();
-
-	void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
+	virtual void StopFire() override;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float TimeBetweenShots = 0.1f;
-	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-private:
-	FTimerHandle ShotTimerHandle;
+	
+	/** Projectile class to spawn */
+	UPROPERTY(EditDefaultsOnly, Category=Projectile)
+	TSubclassOf<class ATestFirstPersonProjectile> ProjectileClass;
 };

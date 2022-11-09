@@ -77,6 +77,7 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATestFirstPersonCharacter::OnFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATestFirstPersonCharacter::StopFire);
 
 	// Bind pickup event
 	PlayerInputComponent->BindAction("PickupItem", IE_Pressed, this, &ATestFirstPersonCharacter::PickupItem);
@@ -120,6 +121,12 @@ void ATestFirstPersonCharacter::OnFire()
 			AnimInstance->Montage_Play(Weapon->FireAnimation, 1.f);
 		}
 	}
+}
+
+void ATestFirstPersonCharacter::StopFire()
+{
+	if(Weapon)
+		Weapon->StopFire();
 }
 
 void ATestFirstPersonCharacter::Reload()

@@ -31,7 +31,7 @@ public:
 	TSubclassOf<UUserWidget> HealthWidgetClass;
 	
 	UPROPERTY()
-	UUserWidget* HealthWidget;
+	UUserWidget* HealthWidget_BP;
 	
 	void OnDeath();
 protected:

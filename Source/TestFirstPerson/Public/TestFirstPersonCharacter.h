@@ -69,6 +69,8 @@ protected:
 	
 	void OnFire();
 	
+	void StopFire();
+	
 	void Reload();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
