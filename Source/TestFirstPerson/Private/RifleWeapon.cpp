@@ -76,7 +76,7 @@ void ARifleWeapon::MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& 
 		CollisionQueryParams.AddIgnoredActor(GetOwner());
 	CollisionQueryParams.AddIgnoredActor(this);
 	CollisionQueryParams.bReturnPhysicalMaterial = true;
-	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldDynamic, CollisionQueryParams);
+	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, CollisionQueryParams);
 }
 
 // Called when the game starts or when spawned

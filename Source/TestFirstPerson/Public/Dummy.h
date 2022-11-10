@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/WidgetComponent.h"
+#include "BaseHealthWidget.h"
+//#include "Components/WidgetComponent.h"
 #include "GameFramework/Actor.h"
 #include "Dummy.generated.h"
 
@@ -21,17 +22,17 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, Category="Components")
 	UStaticMeshComponent* MeshComponent;
 	
-	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
-	//UHealthComponent* HealthComponent;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
-	UWidgetComponent* WidgetComponent;
+	UHealthComponent* HealthComponent;
+	
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	//UWidgetComponent* WidgetComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UUserWidget> HealthWidgetClass;
 	
 	UPROPERTY()
-	UUserWidget* HealthWidget_BP;
+	UBaseHealthWidget* HealthWidget_BP;
 	
 	UFUNCTION(BlueprintCallable)
 	void OnDeath();

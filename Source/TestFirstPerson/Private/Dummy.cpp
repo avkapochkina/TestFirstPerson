@@ -3,8 +3,6 @@
 
 #include "Dummy.h"
 #include "HealthComponent.h"
-#include "Blueprint/UserWidget.h"
-
 
 // Sets default values
 ADummy::ADummy()
@@ -13,8 +11,8 @@ ADummy::ADummy()
 	PrimaryActorTick.bCanEverTick = true;
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	RootComponent = MeshComponent;
-	//HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
-	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
+	//WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 }
 
 void ADummy::OnDeath()
@@ -27,13 +25,15 @@ void ADummy::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//check(HealthComponent);
-	//HealthComponent->MaxHealth = 200.f;
-	HealthWidget_BP = CreateWidget<UUserWidget>(GetWorld(), HealthWidgetClass);
+	check(HealthComponent);
+	
+	HealthWidget_BP = CreateWidget<UBaseHealthWidget>(GetWorld(), HealthWidgetClass);
 	if(HealthWidget_BP)
 	{
-		WidgetComponent->SetWidget(HealthWidget_BP);
-		WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Visible);
+		HealthWidget_BP->AddToViewport();
+		HealthWidget_BP->SetVisibility(ESlateVisibility::Visible);
+		//WidgetComponent->SetWidget(HealthWidget_BP);
+		//WidgetComponent->GetWidget()->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 

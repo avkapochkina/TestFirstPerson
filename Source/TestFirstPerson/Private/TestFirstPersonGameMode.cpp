@@ -31,6 +31,11 @@ void ATestFirstPersonGameMode::BeginPlay()
 	{
 		OnPlayerDied.AddDynamic(this, &ATestFirstPersonGameMode::PlayerDied);
 	}
+	
+	if (!OnActorDied.IsBound())
+	{
+		OnActorDied.AddDynamic(this, &ATestFirstPersonGameMode::ActorDied);
+	}
 }
 
 void ATestFirstPersonGameMode::PlayerDied(ATestFirstPersonCharacter* Character)
@@ -38,5 +43,10 @@ void ATestFirstPersonGameMode::PlayerDied(ATestFirstPersonCharacter* Character)
 	//Get a reference to our Character's Player Controller
 	AController* CharacterController = Character->GetController();
 	RestartPlayer(CharacterController);
+}
+
+void ATestFirstPersonGameMode::ActorDied(AActor* Actor)
+{
+	// 
 }
 

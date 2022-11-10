@@ -8,6 +8,7 @@
 #include "HealthComponent.generated.h"
 
 class ATestFirstPersonGameMode;
+class ADummy;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TESTFIRSTPERSON_API UHealthComponent : public UActorComponent

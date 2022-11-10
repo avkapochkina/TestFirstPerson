@@ -2,6 +2,7 @@
 
 
 #include "HealthComponent.h"
+#include "BaseHealthWidget.h"
 #include "TestFirstPersonCharacter.h"
 
 // Sets default values for this component's properties
@@ -59,6 +60,12 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 		{
 			ATestFirstPersonCharacter* Actor = Cast<ATestFirstPersonCharacter>(DamagedActor);
 			Actor->OnDeath();
+			return;
 		}
+	}
+	if(ADummy* Actor = Cast<ADummy>(DamagedActor))
+	{
+		if(Actor->HealthWidget_BP)
+			Actor->HealthWidget_BP->UpdateWidget(Health, MaxHealth);
 	}
 }

@@ -64,7 +64,8 @@ protected:
 	/** Handles stafing movement, left and right */
 	void MoveRight(float Val);
 	
-	void PickupItem();
+	void Interact();
+	void PickupItem(ABasePickup* Actor);
 	void DetachItem();
 	
 	void OnFire();

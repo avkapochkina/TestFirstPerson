@@ -10,6 +10,7 @@
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
+#include "SpawnTrigger.h"
 #include "TestFirstPerson/Public/BaseAmmoWidget.h"
 #include "TestFirstPersonGameMode.h"
 #include "Components/WidgetComponent.h"
@@ -84,7 +85,7 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATestFirstPersonCharacter::StopFire);
 
 	// Bind pickup event
-	PlayerInputComponent->BindAction("PickupItem", IE_Pressed, this, &ATestFirstPersonCharacter::PickupItem);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ATestFirstPersonCharacter::Interact);
 	
 	// Bind reload event
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATestFirstPersonCharacter::Reload);
@@ -210,18 +211,10 @@ void ATestFirstPersonCharacter::LookUpAtRate(float Rate)
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
-
-void ATestFirstPersonCharacter::PickupItem()
+void ATestFirstPersonCharacter::Interact()
 {
 	if(GetWorld() != nullptr)
 	{
-		// drop item if player already have something in hands
-		if(PickupActor)
-		{
-			DetachItem();
-			return;
-		}
-
 		// use LineTrace to check item in sight
 		FHitResult OutHit;
 		FVector Start; FRotator Rotation;
@@ -231,33 +224,61 @@ void ATestFirstPersonCharacter::PickupItem()
 		FVector End = ForwardVector * PickupDistance + Start;
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(this);
-		
+			
 		if(GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
 		{
-			// exit if the actor isn't pickup actor or out of pickup range
-			if(!Cast<ABasePickup>(OutHit.Actor))
-				return;
-			ABasePickup* HitActor = Cast<ABasePickup>(OutHit.Actor);
-			PickupActor = HitActor;
-			// setup weapon and it's widget
-			if(PickupActor && PickupActor->bIsWeapon)
+			// choose action with actor
+			if(Cast<ASpawnTrigger>(OutHit.Actor))
 			{
-				Weapon = Cast<ABaseWeapon>(PickupActor);
-				if(Weapon->AmmoWidget)
-				{
-					Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
-					Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
-					Weapon->SetOwner(this);
-				}
+				ASpawnTrigger* HitActor = Cast<ASpawnTrigger>(OutHit.Actor);
+				HitActor->Interact();
+				return;
 			}
-			// hide pickup widget and disable collision while item is in hands
-			PickupActor->SkeletalMeshComponent->SetSimulatePhysics(false);
-			PickupActor->SkeletalMeshComponent->SetEnableGravity(false);
-			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
-				true), PickupItemSocket);
+			// drop item if player already have something in hands
+			if(PickupActor)
+			{
+				DetachItem();
+				return;
+			}
+			if(Cast<ABasePickup>(OutHit.Actor))
+			{
+				ABasePickup* HitActor = Cast<ABasePickup>(OutHit.Actor);
+				PickupItem(HitActor);
+				return;
+			}
+		}
+		else
+		{
+			if(PickupActor)
+			{
+				DetachItem();
+				return;
+			}
 		}
 	}
+}
+
+
+void ATestFirstPersonCharacter::PickupItem(ABasePickup* Actor)
+{
+	PickupActor = Actor;
+	// setup weapon and it's widget
+	if(PickupActor && PickupActor->bIsWeapon)
+	{
+		Weapon = Cast<ABaseWeapon>(PickupActor);
+		if(Weapon->AmmoWidget)
+		{
+			Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
+			Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
+			Weapon->SetOwner(this);
+		}
+	}
+	// hide pickup widget and disable collision while item is in hands
+	PickupActor->SkeletalMeshComponent->SetSimulatePhysics(false);
+	PickupActor->SkeletalMeshComponent->SetEnableGravity(false);
+	PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+	true), PickupItemSocket);
 }
 
 void ATestFirstPersonCharacter::DetachItem()
