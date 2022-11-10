@@ -20,7 +20,7 @@ void UHealthComponent::BeginPlay()
 	const auto Owner = GetOwner();
 	if (Owner)
 	{
-		Owner->OnTakeAnyDamage.AddDynamic(this,&UHealthComponent::OnTakeAnyDamageHandle);
+		Owner->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::OnTakeAnyDamageHandle);
 	}
 }
 
@@ -36,8 +36,6 @@ void UHealthComponent::SetHealth(float NewHealth)
 	const auto NextHealth = FMath::Clamp<float>(NewHealth, 0.0f, MaxHealth);
 	const auto HealthDelta = NextHealth - Health;
 	Health = NextHealth;
-	//if (OnHealthChanged.IsBound())
-	//	OnHealthChanged.Broadcast(Health, HealthDelta);
 }
 
 bool UHealthComponent::TryToAddHealth(float HealthAmount)
@@ -53,16 +51,14 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 	if (Damage <= 0.0f) return;
 	SetHealth(FMath::Clamp(Health - Damage, 0.f, MaxHealth));
 	
-	UE_LOG(LogActor, Verbose, TEXT("Health = %f"), GetHealth());
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red,
+	   FString::Printf(TEXT("DamagedActor = %s, health = %f;"), *DamagedActor->GetName(), GetHealth()));
 	if (IsDead())
 	{
 		if(Cast<ATestFirstPersonCharacter>(DamagedActor))
 		{
-			ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(DamagedActor);
-			Character->OnDeath();
-			//const auto GameMode = GetWorld()->GetAuthGameMode<ATestFirstPersonGameMode>();
-			//if (!GameMode) return;
-			//GameMode->GameOver();
+			ATestFirstPersonCharacter* Actor = Cast<ATestFirstPersonCharacter>(DamagedActor);
+			Actor->OnDeath();
 		}
 	}
 }

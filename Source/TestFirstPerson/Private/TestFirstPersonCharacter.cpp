@@ -234,10 +234,6 @@ void ATestFirstPersonCharacter::PickupItem()
 		
 		if(GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_WorldStatic, CollisionParams))
 		{
-			// debug info
-			DrawDebugLine(GetWorld(), Start, End, OutHit.bBlockingHit ? FColor::Blue : FColor::Red, false,
-				5.0f, 0, 2.0f);
-			UE_LOG(LogActor, Verbose, TEXT("The Actor Being Hit is: %s"), *OutHit.Actor->GetName());
 			// exit if the actor isn't pickup actor or out of pickup range
 			if(!Cast<ABasePickup>(OutHit.Actor))
 				return;
@@ -251,6 +247,7 @@ void ATestFirstPersonCharacter::PickupItem()
 				{
 					Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
 					Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
+					Weapon->SetOwner(this);
 				}
 			}
 			// hide pickup widget and disable collision while item is in hands
@@ -272,6 +269,7 @@ void ATestFirstPersonCharacter::DetachItem()
 		{
 			if(Weapon)
 			{
+				Weapon->SetOwner(nullptr);
 				if(Weapon->AmmoWidget)
 					Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
 				Weapon = nullptr;

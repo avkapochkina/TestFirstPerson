@@ -21,8 +21,8 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, Category="Components")
 	UStaticMeshComponent* MeshComponent;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
-	UHealthComponent* HealthComponent;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	//UHealthComponent* HealthComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UWidgetComponent* WidgetComponent;
@@ -33,6 +33,7 @@ public:
 	UPROPERTY()
 	UUserWidget* HealthWidget_BP;
 	
+	UFUNCTION(BlueprintCallable)
 	void OnDeath();
 protected:
 	// Called when the game starts or when spawned

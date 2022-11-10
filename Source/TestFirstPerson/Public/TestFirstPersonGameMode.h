@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Dummy.h"
 #include "TestFirstPersonCharacter.h"
 #include "GameFramework/GameModeBase.h"
 #include "TestFirstPersonGameMode.generated.h"

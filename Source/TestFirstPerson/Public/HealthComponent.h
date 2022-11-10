@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TestFirstPersonGameMode.h"
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
+
+class ATestFirstPersonGameMode;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TESTFIRSTPERSON_API UHealthComponent : public UActorComponent
@@ -30,17 +33,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Health")
 	bool IsHealthFull() const { return FMath::IsNearlyEqual(Health, MaxHealth); };
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Health")
+	float MaxHealth;
+	
 	void SetHealth(float NewHealth);
 	
 	bool TryToAddHealth(float HealthAmount);
-	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float MaxHealth;
-
 	float Health;
 	
 	UFUNCTION()

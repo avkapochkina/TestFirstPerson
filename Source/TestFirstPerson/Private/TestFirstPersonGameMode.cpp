@@ -40,4 +40,3 @@ void ATestFirstPersonGameMode::PlayerDied(ATestFirstPersonCharacter* Character)
 	RestartPlayer(CharacterController);
 }
 
-

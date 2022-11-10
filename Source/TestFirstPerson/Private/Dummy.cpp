@@ -10,17 +10,16 @@
 ADummy::ADummy()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	RootComponent = MeshComponent;
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
+	//HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
-	//WidgetComponent->AttachToComponent(RootComponent);
 }
 
 void ADummy::OnDeath()
 {
-	delete this;
+	this->Destroy();
 }
 
 // Called when the game starts or when spawned
@@ -28,7 +27,8 @@ void ADummy::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	check(HealthComponent);
+	//check(HealthComponent);
+	//HealthComponent->MaxHealth = 200.f;
 	HealthWidget_BP = CreateWidget<UUserWidget>(GetWorld(), HealthWidgetClass);
 	if(HealthWidget_BP)
 	{
@@ -40,6 +40,7 @@ void ADummy::BeginPlay()
 // Called every frame
 void ADummy::Tick(float DeltaTime)
 {
+	
 	Super::Tick(DeltaTime);
 }
 

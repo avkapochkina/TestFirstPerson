@@ -99,7 +99,7 @@ void ABaseWeapon::ChangeClip()
 
 AController* ABaseWeapon::GetController() const
 {
-	const auto Pawn = Cast<APawn>(GetOwner());
+	const ATestFirstPersonCharacter* Pawn = Cast<ATestFirstPersonCharacter>(GetOwner());
 	
 	if(Pawn == nullptr)
 		return nullptr;
@@ -109,7 +109,10 @@ AController* ABaseWeapon::GetController() const
 bool ABaseWeapon::GetPlayerViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const
 {
 	const auto Character = Cast<ATestFirstPersonCharacter>(GetOwner());
-	if (!Character) return false;
+	if (!Character)
+	{
+		return false;
+	}
 
 	if (Character->IsPlayerControlled())
 	{
