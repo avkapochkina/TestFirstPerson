@@ -34,8 +34,6 @@ public:
 	
 	bool TryToAddHealth(float HealthAmount);
 	
-	// respawn:
-	void Respawn(int32 RespawnTime);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

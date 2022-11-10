@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TestFirstPerson/Public/TestFirstPersonGameMode.h"
-
 #include "EngineUtils.h"
 #include "TestFirstPerson/Public/TestFirstPersonHUD.h"
 #include "TestFirstPerson/Public/TestFirstPersonCharacter.h"
@@ -18,20 +17,27 @@ ATestFirstPersonGameMode::ATestFirstPersonGameMode()
 	HUDClass = ATestFirstPersonHUD::StaticClass();
 }
 
-void ATestFirstPersonGameMode::GameOver()
+void ATestFirstPersonGameMode::RestartPlayer(AController* NewPlayer)
 {
-	for (auto Pawn : TActorRange<APawn>(GetWorld()))
+	Super::RestartPlayer(NewPlayer);
+}
+
+void ATestFirstPersonGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	//Bind our Player died delegate to the Gamemode's PlayerDied function.
+	if (!OnPlayerDied.IsBound())
 	{
-		if (Pawn)
-		{
-			Pawn->TurnOff();
-			Pawn->DisableInput(nullptr);
-		}
+		OnPlayerDied.AddDynamic(this, &ATestFirstPersonGameMode::PlayerDied);
 	}
 }
 
-void ATestFirstPersonGameMode::RespawnRequest(AController* Controller)
+void ATestFirstPersonGameMode::PlayerDied(ATestFirstPersonCharacter* Character)
 {
-	//ResetOnePlayer(Controller);
+	//Get a reference to our Character's Player Controller
+	AController* CharacterController = Character->GetController();
+	RestartPlayer(CharacterController);
 }
+
 

@@ -3,6 +3,8 @@
 
 #include "RifleWeapon.h"
 
+#include "DrawDebugHelpers.h"
+#include "TestFirstPersonGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -18,27 +20,54 @@ ARifleWeapon::ARifleWeapon()
 
 void ARifleWeapon::MakeShot()
 {
-	Super::MakeShot();
-	
-	if (FireSound != nullptr)
+	Super::MakeShot();	
+	if (!GetWorld())
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+		UE_LOG(LogActor, Verbose, TEXT("!GetWorld()"));
+		return;
 	}
 	
-	if (!GetWorld()) return;
-	
 	FHitResult HitResult;
-	FVector Start = MuzzleLocation->GetComponentLocation();
-	FVector End = GetActorForwardVector() + Start;	
-	FCollisionQueryParams CollisionQueryParams;
-	CollisionQueryParams.AddIgnoredActor(GetOwner());
-	CollisionQueryParams.bReturnPhysicalMaterial = true;
-	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_WorldDynamic, CollisionQueryParams);
+	//FVector Start = SkeletalMeshComponent->GetSocketLocation(MuzzleSocket);
+	const auto Pawn = Cast<APawn>(GetOwner());
+	if(Pawn == nullptr)
+	{
+		UE_LOG(LogActor, Verbose, TEXT("!Pawn"));
+		return;
+	}
 
-	const auto DamagedActor = HitResult.GetActor();
-	if (!DamagedActor) return;
-	DamagedActor->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
-	//DecreaseAmmo();	
+	//FVector ViewLocation = SkeletalMeshComponent->GetSocketLocation(MuzzleSocket);
+	FVector ViewLocation;
+	//FRotator ViewRotation = SkeletalMeshComponent->GetSocketRotation(MuzzleSocket);
+	FRotator ViewRotation;
+	//if (GetPlayerViewPoint(ViewLocation, ViewRotation))
+	//{
+		const FVector ShootDirection = ViewRotation.Vector();
+		//FVector Start = ViewLocation;
+		FVector Start = SkeletalMeshComponent->GetSocketLocation(MuzzleSocket);
+		//FVector End = ViewLocation + ShootDirection * ShotDistance;
+		FVector End = Start + SkeletalMeshComponent->GetSocketRotation(MuzzleSocket).Vector() * ShotDistance;
+		UE_LOG(LogActor, Verbose, TEXT("%f,%f,%f"), Start.X, Start.Y, Start.Z);
+		UE_LOG(LogActor, Verbose, TEXT("%f,%f,%f"), End.X, End.Y, End.Z);
+		FCollisionQueryParams CollisionQueryParams;
+		CollisionQueryParams.AddIgnoredActor(GetOwner());
+        CollisionQueryParams.AddIgnoredActor(this);
+        CollisionQueryParams.bReturnPhysicalMaterial = true;
+        GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_WorldDynamic, CollisionQueryParams);
+        
+        const auto DamagedActor = HitResult.GetActor();
+		if (!DamagedActor)
+        	return;
+	
+		if(Emitter)
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Emitter, HitResult.Location, FRotator::ZeroRotator,
+				FVector(1), true, EPSCPoolMethod::None, true);
+		//DamagedActor->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
+	//}
+	//else
+	//{
+	//	UE_LOG(LogActor, Verbose, TEXT("!GetPlayerViewPoint"));
+	//}
 }
 
 void ARifleWeapon::StartFire()
@@ -65,6 +94,8 @@ void ARifleWeapon::MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& 
 	CollisionQueryParams.AddIgnoredActor(GetOwner());
 	CollisionQueryParams.bReturnPhysicalMaterial = true;
 	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldDynamic, CollisionQueryParams);
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, HitResult.bBlockingHit ? FColor::Blue : FColor::Red, false,
+			5.0f, 0, 1.0f);
 	//GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, CollisionQueryParams);
 }
 

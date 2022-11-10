@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "BaseWeapon.h"
 #include "GameFramework/Character.h"
-#include "TestFirstPerson/Public/BaseAmmoWidget.h"
 #include "TestFirstPersonCharacter.generated.h"
 
 class UInputComponent;
@@ -66,6 +65,7 @@ protected:
 	void MoveRight(float Val);
 	
 	void PickupItem();
+	void DetachItem();
 	
 	void OnFire();
 	
@@ -105,7 +105,13 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+	
+	//Called when our Actor is destroyed during Gameplay.
+	virtual void Destroyed();
 
+	//Call Gamemode class to Restart Player Character.
+	void CallRestartPlayer();
+	
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }

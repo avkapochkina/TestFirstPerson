@@ -2,6 +2,8 @@
 
 
 #include "BaseWeapon.h"
+
+#include "TestFirstPersonCharacter.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -98,8 +100,28 @@ void ABaseWeapon::ChangeClip()
 AController* ABaseWeapon::GetController() const
 {
 	const auto Pawn = Cast<APawn>(GetOwner());
+	
 	if(Pawn == nullptr)
 		return nullptr;
 	return Pawn->GetController();
+}
+
+bool ABaseWeapon::GetPlayerViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const
+{
+	const auto Character = Cast<ATestFirstPersonCharacter>(GetOwner());
+	if (!Character) return false;
+
+	if (Character->IsPlayerControlled())
+	{
+		const auto Controller = GetController();
+		if (!Controller) return false;
+		Controller->GetPlayerViewPoint(ViewLocation, ViewRotation);
+	}
+	else
+	{
+		ViewLocation = SkeletalMeshComponent->GetSocketLocation(MuzzleSocket);
+		ViewRotation = SkeletalMeshComponent->GetSocketRotation(MuzzleSocket);
+	}
+	return true;
 }
 

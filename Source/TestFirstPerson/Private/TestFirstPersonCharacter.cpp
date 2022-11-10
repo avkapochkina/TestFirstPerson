@@ -10,6 +10,7 @@
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
+#include "TestFirstPerson/Public/BaseAmmoWidget.h"
 #include "TestFirstPersonGameMode.h"
 #include "Components/WidgetComponent.h"
 
@@ -59,12 +60,15 @@ void ATestFirstPersonCharacter::BeginPlay()
 void ATestFirstPersonCharacter::OnDeath()
 {
 	//PlayAnimMontage(DeathAnimMontage);
-	//DisableInput(Controller);
+	DetachItem();
+
 	SetLifeSpan(5.0f);
-	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetSimulatePhysics(true);
+	
+	CallRestartPlayer();
 }
 
 void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -96,6 +100,38 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAxis("TurnRate", this, &ATestFirstPersonCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATestFirstPersonCharacter::LookUpAtRate);
+}
+
+void ATestFirstPersonCharacter::Destroyed()
+{
+	Super::Destroyed();
+	
+	// Example to bind to OnPlayerDied event in GameMode. 
+	if (UWorld* World = GetWorld())
+	{
+		if (ATestFirstPersonGameMode* GameMode = Cast<ATestFirstPersonGameMode>(World->GetAuthGameMode()))
+		{
+			GameMode->GetOnPlayerDied().Broadcast(this);
+		}
+	}
+}
+
+void ATestFirstPersonCharacter::CallRestartPlayer()
+{
+	//Get a reference to the Pawn Controller.
+	AController* CortollerRef = GetController();
+
+	//Destroy the Player.   
+	Destroy();
+
+	//Get the World and GameMode in the world to invoke its restart player function.
+	if (UWorld* World = GetWorld())
+	{
+		if (ATestFirstPersonGameMode* GameMode = Cast<ATestFirstPersonGameMode>(World->GetAuthGameMode()))
+		{
+			GameMode->RestartPlayer(CortollerRef);
+		}
+	}
 }
 
 void ATestFirstPersonCharacter::OnFire()
@@ -182,21 +218,7 @@ void ATestFirstPersonCharacter::PickupItem()
 		// drop item if player already have something in hands
 		if(PickupActor)
 		{
-			UE_LOG(LogActor, Verbose, TEXT("Detaching PickupItem"));
-			if(PickupActor->bIsWeapon)
-			{
-				if(Weapon)
-				{
-					if(Weapon->AmmoWidget)
-						Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
-					Weapon = nullptr;
-				}
-			}
-			PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			PickupActor->SkeletalMeshComponent->SetSimulatePhysics(true);
-			PickupActor->SkeletalMeshComponent->SetEnableGravity(true);
-			PickupActor = nullptr;
+			DetachItem();
 			return;
 		}
 
@@ -238,6 +260,28 @@ void ATestFirstPersonCharacter::PickupItem()
 			PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
 				true), PickupItemSocket);
 		}
+	}
+}
+
+void ATestFirstPersonCharacter::DetachItem()
+{
+	if(PickupActor)
+	{
+		UE_LOG(LogActor, Verbose, TEXT("Detaching PickupItem"));
+		if(PickupActor->bIsWeapon)
+		{
+			if(Weapon)
+			{
+				if(Weapon->AmmoWidget)
+					Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Hidden);
+				Weapon = nullptr;
+			}
+		}
+		PickupActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		PickupActor->SkeletalMeshComponent->SetSimulatePhysics(true);
+		PickupActor->SkeletalMeshComponent->SetEnableGravity(true);
+		PickupActor = nullptr;
 	}
 }
 

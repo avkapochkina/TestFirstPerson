@@ -2,6 +2,7 @@
 
 
 #include "SingleShotWeapon.h"
+#include "TestFirstPersonProjectile.h"
 
 
 // Sets default values
@@ -32,23 +33,18 @@ void ASingleShotWeapon::MakeShot()
 		{
 			const APlayerController* Controller = GetWorld()->GetFirstPlayerController();
 			const FRotator SpawnRotation = Controller->GetControlRotation();
-			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character
-			// location to find the final muzzle position
 			const FVector SpawnLocation = ((MuzzleLocation != nullptr) ? MuzzleLocation->GetComponentLocation()
 				: GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
 
-			//Set Spawn Collision Handling Override
 			FActorSpawnParameters ActorSpawnParams;
 			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
-			// spawn the projectile at the muzzle
 			ATestFirstPersonProjectile* Projectile = World->SpawnActor<ATestFirstPersonProjectile>(ProjectileClass,
 				SpawnLocation, SpawnRotation, ActorSpawnParams);
-			Projectile->Damage = Damage;
+			if(Projectile)
+				Projectile->Damage = Damage;
 		}
 	}
-	
-	//DecreaseAmmo();	
 }
 
 void ASingleShotWeapon::StartFire()

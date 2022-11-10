@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseWeapon.h"
+#include "Camera/CameraComponent.h"
 #include "RifleWeapon.generated.h"
 
 UCLASS()
@@ -26,9 +27,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Comstants")
 	float TimeBetweenShots = 0.1f;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Comstants")
+	float ShotDistance = 1000.f;
+	
+	/** hit effect */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite="Gameplay")
+	UParticleSystem* Emitter;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

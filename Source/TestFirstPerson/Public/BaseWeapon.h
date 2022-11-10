@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "BaseAmmoWidget.h"
 #include "TestFirstPerson/Public/BasePickup.h"
-#include "TestFirstPerson/Public/TestFirstPersonProjectile.h"
 #include "BaseWeapon.generated.h"
 
 UCLASS()
@@ -55,6 +54,7 @@ public:
 	/** Gun muzzle's offset from the characters location */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	FVector GunOffset;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -66,6 +66,11 @@ protected:
 	void ChangeClip();
 
 	AController* GetController() const;
+	
+	bool GetPlayerViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FName MuzzleSocket = "Muzzle";
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Constants")
 	uint8 MaxClips = 3;

@@ -14,6 +14,13 @@ class ATestFirstPersonProjectile : public AActor
 {
 	GENERATED_BODY()
 
+public:
+	ATestFirstPersonProjectile();
+	
+	/** explosion effect */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Projectile)
+	UParticleSystem* Emitter;
+	
 	/** Sphere collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
 	USphereComponent* CollisionComp;
@@ -21,11 +28,8 @@ class ATestFirstPersonProjectile : public AActor
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
-
-public:
-	ATestFirstPersonProjectile();
 	
-	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category=Projectile)
 	float Damage = 50.0;
 	
 	/** called when projectile hits something */

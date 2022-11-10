@@ -47,13 +47,6 @@ bool UHealthComponent::TryToAddHealth(float HealthAmount)
 	return true;
 }
 
-void UHealthComponent::Respawn(int32 RespawnTime)
-{
-	//RespawnCountdown = RespawnTime;
-	//GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this,
-	//	&UHealthComponent::RespawnTimerUpdate, 1.0f, true);
-}
-
 void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
                                              AController* InstigatedBy, AActor* DamageCauser)
 {

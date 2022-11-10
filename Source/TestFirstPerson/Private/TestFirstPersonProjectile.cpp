@@ -2,6 +2,8 @@
 
 #include "TestFirstPerson/Public/TestFirstPersonProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -43,7 +45,9 @@ void ATestFirstPersonProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* Oth
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, GetWorld()->GetFirstPlayerController(),
 			this, UDamageType::StaticClass());
 		UE_LOG(LogActor, Verbose, TEXT("The Actor Being Hit is: %s"), *OtherActor->GetName());
-		
+		if(Emitter)
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Emitter, Hit.Location, FRotator::ZeroRotator,
+				FVector(1), true, EPSCPoolMethod::None, true);
 		Destroy();
 	}
 }
