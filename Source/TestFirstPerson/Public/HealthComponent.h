@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TestFirstPersonGameMode.h"
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 

@@ -53,7 +53,7 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 	SetHealth(FMath::Clamp(Health - Damage, 0.f, MaxHealth));
 	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red,
-	   FString::Printf(TEXT("DamagedActor = %s, health = %f;"), *DamagedActor->GetName(), GetHealth()));
+	   FString::Printf(TEXT("DamagedActor = %s, health = %f;"), *DamagedActor->GetName(), Health));
 	if (IsDead())
 	{
 		if(Cast<ATestFirstPersonCharacter>(DamagedActor))
@@ -63,9 +63,9 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 			return;
 		}
 	}
-	if(ADummy* Actor = Cast<ADummy>(DamagedActor))
-	{
-		if(Actor->HealthWidget_BP)
-			Actor->HealthWidget_BP->UpdateWidget(Health, MaxHealth);
-	}
+	//if(ADummy* Actor = Cast<ADummy>(DamagedActor))
+	//{
+	//	if(Actor->HealthWidget_BP)
+	//		Actor->HealthWidget_BP->UpdateWidget(Health, MaxHealth);
+	//}
 }
