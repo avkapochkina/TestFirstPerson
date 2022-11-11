@@ -23,7 +23,6 @@ ABaseWeapon::ABaseWeapon()
 
 	// setup constants
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
-	bIsWeapon = true;
 	CurrentClips = MaxClips;
 	CurrentBullets = MaxBullets;
 }

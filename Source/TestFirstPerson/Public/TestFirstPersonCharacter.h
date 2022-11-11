@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseWeapon.h"
+#include "TestFirstPersonGameInstance.h"
 #include "GameFramework/Character.h"
 #include "TestFirstPersonCharacter.generated.h"
 
@@ -28,6 +29,9 @@ protected:
 	
 public:
 	ATestFirstPersonCharacter();
+	
+	UPROPERTY()
+	UTestFirstPersonGameInstance* GameInstanceRef;
 	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
@@ -57,6 +61,10 @@ public:
 	
 	virtual void OnDeath();
 	
+	void PickupItem(ABasePickup* Actor);
+	
+	UPROPERTY()
+	ABasePickup* PickupActor;
 protected:
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -65,7 +73,6 @@ protected:
 	void MoveRight(float Val);
 	
 	void Interact();
-	void PickupItem(ABasePickup* Actor);
 	void DetachItem();
 	
 	void OnFire();
@@ -76,9 +83,6 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
-	
-	UPROPERTY()
-	ABasePickup* PickupActor;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
 	float PickupDistance = 300.0;

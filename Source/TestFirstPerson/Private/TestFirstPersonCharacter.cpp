@@ -1,19 +1,19 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "TestFirstPerson/Public/TestFirstPersonCharacter.h"
-#include "BasePickup.h"
-#include "DrawDebugHelpers.h"
+#include "TestFirstPersonCharacter.h"
+
 #include "Animation/AnimInstance.h"
+#include "BaseAmmoWidget.h"
+#include "BasePickup.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "GameFramework/InputSettings.h"
-#include "Kismet/GameplayStatics.h"
-#include "HealthComponent.h"
-#include "SpawnTrigger.h"
-#include "TestFirstPerson/Public/BaseAmmoWidget.h"
-#include "TestFirstPersonGameMode.h"
 #include "Components/WidgetComponent.h"
+#include "GameFramework/InputSettings.h"
+#include "HealthComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "SpawnTrigger.h"
+#include "TestFirstPersonGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -59,6 +59,12 @@ void ATestFirstPersonCharacter::BeginPlay()
 
 	Mesh1P->SetHiddenInGame(false, true);
 	check(HealthComponent);
+	
+	GameInstanceRef = Cast<UTestFirstPersonGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!GameInstanceRef->bIsFirstLoading)
+	{
+		GameInstanceRef->LoadCharacterData(this);
+	}
 }
 
 void ATestFirstPersonCharacter::OnDeath()
@@ -243,7 +249,7 @@ void ATestFirstPersonCharacter::PickupItem(ABasePickup* Actor)
 {
 	PickupActor = Actor;
 	// setup weapon and it's widget
-	if(PickupActor && PickupActor->bIsWeapon)
+	if(PickupActor && PickupActor->GetType() == BasePickup)
 	{
 		Weapon = Cast<ABaseWeapon>(PickupActor);
 		if(Weapon->AmmoWidget)
@@ -266,7 +272,7 @@ void ATestFirstPersonCharacter::DetachItem()
 	if(PickupActor)
 	{
 		UE_LOG(LogActor, Verbose, TEXT("Detaching PickupItem"));
-		if(PickupActor->bIsWeapon)
+		if(PickupActor->GetType() != BasePickup)
 		{
 			if(Weapon)
 			{
@@ -290,5 +296,5 @@ bool ATestFirstPersonCharacter::CanFire() const
 		return false;
 	if(!Weapon)
 		return false;
-	return PickupActor->bIsWeapon;
+	return PickupActor->GetType() != BasePickup;
 }

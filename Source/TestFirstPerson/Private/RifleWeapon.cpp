@@ -16,6 +16,8 @@ ARifleWeapon::ARifleWeapon()
 	
 	SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	SkeletalMeshComponent->SetSimulatePhysics(true);
+	
+	Type = RifleWeapon;
 }
 
 void ARifleWeapon::MakeShot()
@@ -82,7 +84,6 @@ void ARifleWeapon::MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& 
 void ARifleWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

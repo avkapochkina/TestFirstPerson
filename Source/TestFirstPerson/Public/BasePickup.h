@@ -9,6 +9,14 @@
 
 class UWidgetComponent;
 
+UENUM()
+enum EType
+{
+	BasePickup     UMETA(DisplayName = "BasePickup"),
+	RifleWeapon      UMETA(DisplayName = "RifleWeapon"),
+	SingledShotWeapon   UMETA(DisplayName = "SingledShotWeapon"),
+};
+
 UCLASS()
 class TESTFIRSTPERSON_API ABasePickup : public AActor
 {
@@ -55,7 +63,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Components")
 	UWidgetComponent* WidgetComponent;
 
-	// is it weapon
+	UFUNCTION()
+	TEnumAsByte<EType> GetType() const { return Type; }
+protected:
 	UPROPERTY()
-	bool bIsWeapon = false;
+	TEnumAsByte<EType> Type = BasePickup;
 };

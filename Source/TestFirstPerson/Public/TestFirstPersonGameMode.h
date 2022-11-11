@@ -23,6 +23,8 @@ public:
 	const FOnDeath& GetOnActorDied() const { return OnActorDied; }
 	
 	void RestartPlayer(AController* NewPlayer) override;
+
+	
 protected:
 	virtual void BeginPlay() override;
 

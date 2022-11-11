@@ -22,6 +22,7 @@ public:
 	virtual void StopFire();
 
 	void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

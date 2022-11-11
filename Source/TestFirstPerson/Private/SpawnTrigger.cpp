@@ -3,6 +3,8 @@
 
 #include "SpawnTrigger.h"
 
+#include "TestFirstPersonCharacter.h"
+
 
 // Sets default values
 ASpawnTrigger::ASpawnTrigger()
@@ -31,7 +33,6 @@ void ASpawnTrigger::Interact()
 	FVector Location = GetActorLocation();
 	Location.Z += 50.0;
 	GetWorld()->SpawnActor<ABasePickup>(SpawnedActorClass, Location, Rotation, SpawnInfo);
-	
 }
 
 // Called every frame

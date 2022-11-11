@@ -13,13 +13,14 @@ ASingleShotWeapon::ASingleShotWeapon()
 	
 	SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	SkeletalMeshComponent->SetSimulatePhysics(true);
+	
+	Type = SingledShotWeapon;
 }
 
 // Called when the game starts or when spawned
 void ASingleShotWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ASingleShotWeapon::MakeShot()

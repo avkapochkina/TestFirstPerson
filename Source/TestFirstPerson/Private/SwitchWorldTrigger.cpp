@@ -2,8 +2,10 @@
 
 
 #include "SwitchWorldTrigger.h"
+
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "TestFirstPersonCharacter.h"
 
 // Sets default values
 ASwitchWorldTrigger::ASwitchWorldTrigger()
@@ -29,12 +31,11 @@ void ASwitchWorldTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 	UE_LOG(LogActor, Warning, TEXT("ABasePickup::OnOverlapBegin"));
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		if(Cast<APawn>(OtherActor))
+		if(ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(OtherActor))
 		{
 			FString CurrentMap = GetWorld()->GetMapName();
 			CurrentMap.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
-
-			UGameplayStatics::OpenLevel(GetWorld(), FName(MapName));
+			Character->GameInstanceRef->SaveCharacterData(Character);
 		}
 	}
 }

@@ -20,6 +20,7 @@ public:
 	virtual void StartFire() override;
 	
 	virtual void StopFire() override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
