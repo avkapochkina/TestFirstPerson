@@ -14,6 +14,7 @@
 #include "TestFirstPerson/Public/BaseAmmoWidget.h"
 #include "TestFirstPersonGameMode.h"
 #include "Components/WidgetComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -46,6 +47,9 @@ ATestFirstPersonCharacter::ATestFirstPersonCharacter()
 
 	// Create a HealthComponent
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
+
+	Levels.Add("FirstMap");
+	Levels.Add("SecondMap");
 }
 
 void ATestFirstPersonCharacter::BeginPlay()

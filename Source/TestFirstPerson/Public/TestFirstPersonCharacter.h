@@ -122,4 +122,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	ABaseWeapon* GetWeapon() const { return Weapon; };
+
+	TArray<FString> Levels;
 };

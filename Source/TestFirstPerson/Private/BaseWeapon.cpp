@@ -94,7 +94,7 @@ void ABaseWeapon::DecreaseAmmo()
 {
 	if(CurrentBullets == 0)
 	{
-		ChangeClip();
+		Reload();
 		return;
 	}
 	CurrentBullets--;
