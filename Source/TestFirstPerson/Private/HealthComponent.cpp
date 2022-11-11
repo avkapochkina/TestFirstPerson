@@ -4,6 +4,7 @@
 #include "HealthComponent.h"
 #include "BaseHealthWidget.h"
 #include "TestFirstPersonCharacter.h"
+#include "Dummy.h"
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -52,6 +53,12 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 	if (Damage <= 0.0f) return;
 	SetHealth(FMath::Clamp(Health - Damage, 0.f, MaxHealth));
 	
+	if(ADummy* Actor = Cast<ADummy>(DamagedActor))
+	{
+		if(Actor->HealthWidget_BP)
+			Actor->HealthWidget_BP->UpdateWidget(Health, MaxHealth);
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red,
 	   FString::Printf(TEXT("DamagedActor = %s, health = %f;"), *DamagedActor->GetName(), Health));
 	if (IsDead())
@@ -62,10 +69,10 @@ void UHealthComponent::OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage,
 			Actor->OnDeath();
 			return;
 		}
+		if(ADummy* Actor = Cast<ADummy>(DamagedActor))
+		{
+			Actor->OnDeath();
+			return;
+		}
 	}
-	//if(ADummy* Actor = Cast<ADummy>(DamagedActor))
-	//{
-	//	if(Actor->HealthWidget_BP)
-	//		Actor->HealthWidget_BP->UpdateWidget(Health, MaxHealth);
-	//}
 }

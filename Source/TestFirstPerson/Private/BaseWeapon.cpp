@@ -48,22 +48,46 @@ void ABaseWeapon::MakeShot()
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 	}
 	
+	const ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(GetOwner());
+	UAnimInstance* AnimInstance = Character->Mesh1P->GetAnimInstance();
+	if(Character && FireAnimation != nullptr)
+	{
+		AnimInstance->Montage_Play(FireAnimation, 1.f);
+	}
+	
 	DecreaseAmmo();
 }
 
 bool ABaseWeapon::Reload()
 {
-	if(CurrentClips > 0 && CurrentBullets < MaxBullets)
+	if(CanReload())
 	{
+		StopFire();
 		ChangeClip();
+		const ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(GetOwner());
+		UAnimInstance* AnimInstance = Character->Mesh1P->GetAnimInstance();
+		if(Character && ReloadAnimation != nullptr)
+		{
+			AnimInstance->Montage_Play(ReloadAnimation, 1.f);
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ABaseWeapon::HandleOnMontageEnded);
+			bIsReloading = true;
+		}
 		return true;
 	}
 	return false;
 }
 
+void ABaseWeapon::HandleOnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	const ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(GetOwner());
+	UAnimInstance* AnimInstance = Character->Mesh1P->GetAnimInstance();
+	AnimInstance->OnMontageEnded.RemoveDynamic(this, &ABaseWeapon::HandleOnMontageEnded);
+	bIsReloading = false;
+}
+
 bool ABaseWeapon::CanReload() const
 {
-	return CurrentBullets < MaxBullets && CurrentClips > 0;
+	return CurrentBullets < MaxBullets && CurrentClips > 0 && !bIsReloading;
 }
 
 void ABaseWeapon::DecreaseAmmo()

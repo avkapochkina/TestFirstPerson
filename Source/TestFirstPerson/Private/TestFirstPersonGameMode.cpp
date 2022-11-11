@@ -35,11 +35,6 @@ void ATestFirstPersonGameMode::BeginPlay()
 	{
 		OnActorDied.AddDynamic(this, &ATestFirstPersonGameMode::ActorDied);
 	}
-	
-	if (!OnCharacterDied.IsBound())
-	{
-		OnCharacterDied.AddDynamic(this, &ATestFirstPersonGameMode::CharacterDied);
-	}
 }
 
 void ATestFirstPersonGameMode::PlayerDied(ATestFirstPersonCharacter* Character)
@@ -52,10 +47,5 @@ void ATestFirstPersonGameMode::PlayerDied(ATestFirstPersonCharacter* Character)
 void ATestFirstPersonGameMode::ActorDied(AActor* Actor)
 {
 	// 
-}
-
-void ATestFirstPersonGameMode::CharacterDied(ABaseCharacter* Character)
-{
-	//
 }
 

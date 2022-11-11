@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BaseWeapon.h"
-#include "Camera/CameraComponent.h"
 #include "RifleWeapon.generated.h"
 
 UCLASS()
@@ -31,7 +30,7 @@ protected:
 	float TimeBetweenShots = 0.1f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Comstants")
-	float ShotDistance = 1000.f;
+	float ShotDistance = 5000.f;
 	
 	/** hit effect */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite="Gameplay")

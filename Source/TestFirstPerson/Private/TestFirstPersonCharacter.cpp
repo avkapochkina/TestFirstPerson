@@ -54,7 +54,6 @@ void ATestFirstPersonCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Mesh1P->SetHiddenInGame(false, true);
-
 	check(HealthComponent);
 }
 
@@ -137,27 +136,11 @@ void ATestFirstPersonCharacter::CallRestartPlayer()
 
 void ATestFirstPersonCharacter::OnFire()
 {
-	if(!CanFire())
+	if(!CanFire() || Weapon->IsAmmoEmpty())
 	{
 		return;
-	}
-	
-	if(Weapon->IsAmmoEmpty())
-	{
-		return;
-	}
-	
-	Weapon->MakeShot();
-	// try and play a firing animation if specified
-	if (Weapon->FireAnimation != nullptr)
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if (AnimInstance != nullptr)
-		{
-			AnimInstance->Montage_Play(Weapon->FireAnimation, 1.f);
-		}
-	}
+	}	
+	Weapon->StartFire();
 }
 
 void ATestFirstPersonCharacter::StopFire()
@@ -170,14 +153,7 @@ void ATestFirstPersonCharacter::Reload()
 {
 	if(Weapon)
 	{
-		if(Weapon->Reload() && Weapon->ReloadAnimation != nullptr)
-		{
-			UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-			if (AnimInstance != nullptr)
-			{
-				AnimInstance->Montage_Play(Weapon->ReloadAnimation, 1.f);
-			}
-		}
+		Weapon->Reload();
 	}
 }
 

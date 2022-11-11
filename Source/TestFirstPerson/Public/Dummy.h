@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseHealthWidget.h"
-//#include "Components/WidgetComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/Actor.h"
 #include "Dummy.generated.h"
 
@@ -25,8 +25,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
 	
-	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
-	//UWidgetComponent* WidgetComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	UWidgetComponent* WidgetComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UUserWidget> HealthWidgetClass;

@@ -25,8 +25,9 @@ public:
 	bool Reload();
 
 	bool CanReload() const;
-	
-	//virtual void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
+
+	UFUNCTION()
+	void HandleOnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -91,4 +92,6 @@ public:
 	bool IsAmmoEmpty() const;
 	
 	bool bIsShooting = false;
+	
+	bool bIsReloading = false;
 };

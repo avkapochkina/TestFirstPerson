@@ -20,22 +20,22 @@ ARifleWeapon::ARifleWeapon()
 
 void ARifleWeapon::MakeShot()
 {
-	Super::MakeShot();	
-	if (!GetWorld())
-	{
-		return;
-	}
 	ATestFirstPersonCharacter* Character = Cast<ATestFirstPersonCharacter>(GetOwner());
 	if(!Character)
 	{
 		return;
 	}
+	if (!GetWorld() || IsAmmoEmpty())
+	{
+		return;
+	}
+	
+	Super::MakeShot();
 	
 	FRotator Rotation;
 	FVector Start = SkeletalMeshComponent->GetSocketLocation(MuzzleSocket);
-	FVector End;
 	GetPlayerViewPoint(Start,Rotation);
-	End = Start + ShotDistance * Rotation.Vector();
+	FVector End = Start + ShotDistance * Rotation.Vector();
 	
 	FHitResult HitResult;
 	MakeHit(HitResult, Start, End);
@@ -43,12 +43,11 @@ void ARifleWeapon::MakeShot()
     const auto DamagedActor = HitResult.GetActor();
 	if (!DamagedActor)
 		return;
+	DamagedActor->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
 	
 	if(Emitter)
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Emitter, HitResult.Location, FRotator::ZeroRotator,
 			FVector(1), true, EPSCPoolMethod::None, true);
-	
-	DamagedActor->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
 }
 
 void ARifleWeapon::StartFire()
@@ -56,8 +55,8 @@ void ARifleWeapon::StartFire()
 	Super::StartFire();
 	
 	GetWorld()->GetTimerManager().SetTimer(ShotTimerHandle, this, &ARifleWeapon::MakeShot, TimeBetweenShots, true);
-	bIsShooting = true;
 	MakeShot();
+	bIsShooting = true;
 }
 
 void ARifleWeapon::StopFire()

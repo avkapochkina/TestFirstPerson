@@ -50,6 +50,7 @@ void ASingleShotWeapon::MakeShot()
 void ASingleShotWeapon::StartFire()
 {
 	Super::StartFire();
+	MakeShot();
 }
 
 void ASingleShotWeapon::StopFire()
