@@ -3,16 +3,16 @@
 #include "TestFirstPersonCharacter.h"
 
 #include "Animation/AnimInstance.h"
-#include "BaseAmmoWidget.h"
-#include "BasePickup.h"
+#include "Widgets/BaseAmmoWidget.h"
+#include "Pickups/BasePickup.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/InputSettings.h"
-#include "HealthComponent.h"
+#include "Components/HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "SpawnTrigger.h"
+#include "Actors/SpawnTrigger.h"
 #include "TestFirstPersonGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -48,8 +48,6 @@ ATestFirstPersonCharacter::ATestFirstPersonCharacter()
 	// Create a HealthComponent
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 
-	Levels.Add("FirstMap");
-	Levels.Add("SecondMap");
 }
 
 void ATestFirstPersonCharacter::BeginPlay()
@@ -59,11 +57,14 @@ void ATestFirstPersonCharacter::BeginPlay()
 
 	Mesh1P->SetHiddenInGame(false, true);
 	check(HealthComponent);
-	
+	HealthComponent->SetHealth(HealthComponent->MaxHealth);
 	GameInstanceRef = Cast<UTestFirstPersonGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!GameInstanceRef->bIsFirstLoading)
+	if(GameInstanceRef)
 	{
-		GameInstanceRef->LoadCharacterData(this);
+		if(!GameInstanceRef->bIsFirstLoading)
+		{
+			GameInstanceRef->LoadCharacterData(this);
+		}
 	}
 }
 
@@ -201,6 +202,12 @@ void ATestFirstPersonCharacter::Interact()
 {
 	if(GetWorld() != nullptr)
 	{
+		// drop item if player already have something in hands
+		if(PickupActor)
+		{
+			DetachItem();
+			return;
+		}
 		// use LineTrace to check item in sight
 		FHitResult OutHit;
 		FVector Start; FRotator Rotation;
@@ -220,24 +227,10 @@ void ATestFirstPersonCharacter::Interact()
 				HitActor->Interact();
 				return;
 			}
-			// drop item if player already have something in hands
-			if(PickupActor)
-			{
-				DetachItem();
-				return;
-			}
 			if(Cast<ABasePickup>(OutHit.Actor))
 			{
 				ABasePickup* HitActor = Cast<ABasePickup>(OutHit.Actor);
 				PickupItem(HitActor);
-				return;
-			}
-		}
-		else
-		{
-			if(PickupActor)
-			{
-				DetachItem();
 				return;
 			}
 		}
@@ -249,29 +242,31 @@ void ATestFirstPersonCharacter::PickupItem(ABasePickup* Actor)
 {
 	PickupActor = Actor;
 	// setup weapon and it's widget
-	if(PickupActor && PickupActor->GetType() == BasePickup)
+	if(PickupActor)
 	{
-		Weapon = Cast<ABaseWeapon>(PickupActor);
-		if(Weapon->AmmoWidget)
+		if(PickupActor->GetType() != BasePickup)
 		{
-			Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
-			Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
-			Weapon->SetOwner(this);
+			Weapon = Cast<ABaseWeapon>(PickupActor);
+			if(Weapon->AmmoWidget)
+			{
+				Weapon->AmmoWidget->SetVisibility(ESlateVisibility::Visible);
+				Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
+				Weapon->SetOwner(this);
+			}
 		}
+		// hide pickup widget and disable collision while item is in hands
+		PickupActor->SkeletalMeshComponent->SetSimulatePhysics(false);
+		PickupActor->SkeletalMeshComponent->SetEnableGravity(false);
+		PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+		true), PickupItemSocket);
 	}
-	// hide pickup widget and disable collision while item is in hands
-	PickupActor->SkeletalMeshComponent->SetSimulatePhysics(false);
-	PickupActor->SkeletalMeshComponent->SetEnableGravity(false);
-	PickupActor->SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	PickupActor->AttachToComponent(this->Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
-	true), PickupItemSocket);
 }
 
 void ATestFirstPersonCharacter::DetachItem()
 {
 	if(PickupActor)
 	{
-		UE_LOG(LogActor, Verbose, TEXT("Detaching PickupItem"));
 		if(PickupActor->GetType() != BasePickup)
 		{
 			if(Weapon)

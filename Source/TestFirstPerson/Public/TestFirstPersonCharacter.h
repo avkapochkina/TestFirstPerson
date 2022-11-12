@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseWeapon.h"
+#include "Pickups/BaseWeapon.h"
 #include "TestFirstPersonGameInstance.h"
 #include "GameFramework/Character.h"
 #include "TestFirstPersonCharacter.generated.h"
@@ -29,9 +29,9 @@ protected:
 	
 public:
 	ATestFirstPersonCharacter();
-	
+		
 	UPROPERTY()
-	UTestFirstPersonGameInstance* GameInstanceRef;
+	class UTestFirstPersonGameInstance* GameInstanceRef;
 	
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
@@ -127,5 +127,4 @@ public:
 	UFUNCTION(BlueprintCallable)
 	ABaseWeapon* GetWeapon() const { return Weapon; };
 
-	TArray<FString> Levels;
 };

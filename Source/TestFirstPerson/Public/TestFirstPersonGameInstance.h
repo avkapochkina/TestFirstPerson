@@ -2,8 +2,9 @@
 
 #pragma once
 
+#include "Engine/GameInstance.h" 
+#include "Pickups/BasePickup.h"
 #include "CoreMinimal.h"
-#include "BasePickup.h"
 #include "TestFirstPersonGameInstance.generated.h"
 
 /**
@@ -16,6 +17,7 @@ class ATestFirstPersonCharacter;
 
 struct FActorData
 {
+	bool bIsHoldingItem = false;
 	TEnumAsByte<EType> Type;
 	FVector Location;
 	FRotator Rotation;
@@ -28,18 +30,23 @@ class TESTFIRSTPERSON_API UTestFirstPersonGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 public:
+	UTestFirstPersonGameInstance(const FObjectInitializer& ObjectInitializer);
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Classes)
+	TSubclassOf<ABasePickup> BasePickupClass;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Classes)
+	TSubclassOf<ARifleWeapon> RifleWeaponClass;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Classes)
+	TSubclassOf<ASingleShotWeapon> SingleShotWeaponClass;
+	
 	float SavedHealth;
 	FActorData SavedPickup;
-	TMap<FString, TArray<FActorData>> SavedActors;
+	//TMap<FString, TArray<FActorData>> SavedActors;
 
 	bool bIsFirstLoading = true;
 	
-	void SaveMapData();
-	void LoadMapData();
-
 	void SaveCharacterData(ATestFirstPersonCharacter* Character);
 	void LoadCharacterData(ATestFirstPersonCharacter* Character);
 	
-	void SaveActor(ABasePickup* Actor);
 	void LoadActor(ABasePickup* Actor);
 };
