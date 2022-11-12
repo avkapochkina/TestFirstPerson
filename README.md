@@ -1,5 +1,6 @@
 # TestFirstPerson
-
+Запись:
+- https://youtu.be/bI69gHRy0CU
 Выполненные задачи:
 - Проект сделан на основе шаблона FirstPerson без использования VR
 - Подбираемые предметы (ABasePickup)
