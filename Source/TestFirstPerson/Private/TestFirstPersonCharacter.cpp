@@ -64,6 +64,8 @@ void ATestFirstPersonCharacter::BeginPlay()
 		if(!GameInstanceRef->bIsFirstLoading)
 		{
 			GameInstanceRef->LoadCharacterData(this);
+			if(Weapon)
+				Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
 		}
 	}
 }
