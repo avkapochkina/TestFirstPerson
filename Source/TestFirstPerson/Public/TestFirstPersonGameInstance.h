@@ -31,6 +31,8 @@ class TESTFIRSTPERSON_API UTestFirstPersonGameInstance : public UGameInstance
 	GENERATED_BODY()
 public:
 	UTestFirstPersonGameInstance(const FObjectInitializer& ObjectInitializer);
+
+	virtual void Init() override;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Classes)
 	TSubclassOf<ABasePickup> BasePickupClass;
@@ -41,7 +43,6 @@ public:
 	
 	float SavedHealth;
 	FActorData SavedPickup;
-	//TMap<FString, TArray<FActorData>> SavedActors;
 
 	bool bIsFirstLoading = true;
 	

@@ -68,13 +68,21 @@ void ATestFirstPersonCharacter::BeginPlay()
 				Weapon->AmmoWidget->UpdateWidget(Weapon->CurrentClips, Weapon->CurrentBullets);
 		}
 	}
+	
+	InfoWidget = CreateWidget<UUserWidget>(this->GameInstanceRef, Info_BP);
+	if(InfoWidget)
+	{
+		InfoWidget->AddToViewport();
+		InfoWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 void ATestFirstPersonCharacter::OnDeath()
 {
 	//PlayAnimMontage(DeathAnimMontage);
 	DetachItem();
-
+	GameInstanceRef->bIsFirstLoading = true;
+	
 	SetLifeSpan(5.0f);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 
@@ -101,6 +109,9 @@ void ATestFirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent*
 	
 	// Bind reload event
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATestFirstPersonCharacter::Reload);
+
+	// Bind opening menu event
+	PlayerInputComponent->BindAction("OpenMenu", IE_Pressed, this, &ATestFirstPersonCharacter::OpenMenu);
 	
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATestFirstPersonCharacter::MoveForward);
@@ -170,6 +181,34 @@ void ATestFirstPersonCharacter::Reload()
 	}
 }
 
+void ATestFirstPersonCharacter::OpenMenu()
+{
+	// in SetWidgetToFocus() mode keyboard inputs don't work
+	// so close widget logic implemented in widget's BP (OnKeyUp event)
+	
+	if(!SpawnMenu_BP) return;
+	
+	SpawnMenu = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), SpawnMenu_BP);
+	if(!SpawnMenu) return;
+	SpawnMenu->bIsFocusable = true;
+	SpawnMenu->SetKeyboardFocus();
+	
+	SpawnMenu->AddToViewport();
+	
+	SpawnMenu->SetVisibility(ESlateVisibility::Visible);
+	
+	FInputModeUIOnly inputSettings;
+	inputSettings.SetWidgetToFocus(SpawnMenu->TakeWidget());
+	inputSettings.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+	if(GetWorld()->GetFirstPlayerController() != nullptr)
+	{
+		GetWorld()->GetFirstPlayerController()->SetInputMode(inputSettings);
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+	}
+
+}
+
 void ATestFirstPersonCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
@@ -204,12 +243,6 @@ void ATestFirstPersonCharacter::Interact()
 {
 	if(GetWorld() != nullptr)
 	{
-		// drop item if player already have something in hands
-		if(PickupActor)
-		{
-			DetachItem();
-			return;
-		}
 		// use LineTrace to check item in sight
 		FHitResult OutHit;
 		FVector Start; FRotator Rotation;
@@ -229,11 +262,19 @@ void ATestFirstPersonCharacter::Interact()
 				HitActor->Interact();
 				return;
 			}
-			if(Cast<ABasePickup>(OutHit.Actor))
+			if(Cast<ABasePickup>(OutHit.Actor) && !PickupActor)
 			{
 				ABasePickup* HitActor = Cast<ABasePickup>(OutHit.Actor);
 				PickupItem(HitActor);
 				return;
+			}
+		}
+		else
+		{
+			// drop item if player already have something in hands
+			if(PickupActor)
+			{
+				DetachItem();
 			}
 		}
 	}

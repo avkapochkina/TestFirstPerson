@@ -11,6 +11,11 @@
 UTestFirstPersonGameInstance::UTestFirstPersonGameInstance(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer) { }
 
+void UTestFirstPersonGameInstance::Init()
+{
+	Super::Init();
+}
+
 void UTestFirstPersonGameInstance::SaveCharacterData(ATestFirstPersonCharacter* Character)
 {
 	if(Character->GameInstanceRef)

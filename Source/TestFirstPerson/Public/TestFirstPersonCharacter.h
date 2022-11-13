@@ -6,6 +6,7 @@
 #include "Pickups/BaseWeapon.h"
 #include "TestFirstPersonGameInstance.h"
 #include "GameFramework/Character.h"
+#include "Widgets/BaseHealthWidget.h"
 #include "TestFirstPersonCharacter.generated.h"
 
 class UInputComponent;
@@ -52,17 +53,17 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
-
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<class ATestFirstPersonProjectile> ProjectileClass;
 	
+	/** Return HealthComponent */
 	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 	
+	/** Called on death */
 	virtual void OnDeath();
 	
+	/** Pickup item */
 	void PickupItem(ABasePickup* Actor);
 	
+	/** Item in hands */
 	UPROPERTY()
 	ABasePickup* PickupActor;
 protected:
@@ -72,14 +73,27 @@ protected:
 	/** Handles stafing movement, left and right */
 	void MoveRight(float Val);
 	
+	/** Interact or pickup item */
 	void Interact();
-	void DetachItem();
 	
+	/** Start fire if there is weapon in hands */
 	void OnFire();
 	
+	/** Stop fire */
 	void StopFire();
 	
+	/** Reload weapon */
 	void Reload();
+	
+	/** Open item spawn menu */
+	void OpenMenu();
+	
+	/** Check is character able to fire */
+	UFUNCTION()
+	bool CanFire() const;
+	
+	/** Detach item from hands */
+	void DetachItem();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
@@ -92,9 +106,19 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FName PickupItemSocket = "GripPoint";
-
-	UFUNCTION()
-	bool CanFire() const;
+	
+	/** Widget with bindings info */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Classes)
+	TSubclassOf<UUserWidget> Info_BP;
+	UPROPERTY()
+	UUserWidget* InfoWidget;
+	
+	/** Widget that spawns chosen weapon */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Classes)
+	TSubclassOf<UUserWidget> SpawnMenu_BP;
+	UPROPERTY()
+	UUserWidget* SpawnMenu;
+	
 	/**
 	 * Called via input to turn at a given rate.
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
